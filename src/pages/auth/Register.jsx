@@ -44,24 +44,37 @@ const Register = () => {
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img alt="Karya" src="logo" className="mx-auto h-10 w-auto" />
-        <h2 className="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">
-          Create an account
-        </h2>
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-[#FDFEFE] px-6 py-12">
+      <div className="flex w-full max-w-5xl overflow-hidden bg-white shadow-lg rounded-lg">
+        {/* Branding Section */}
+        <div className="w-1/2 bg-[#E8EEF1] p-8 hidden md:flex flex-col justify-center">
+          <h1 className="text-3xl font-bold text-[#1A2E46]">
+            Join Karya Today
+          </h1>
+          <p className="mt-4 text-lg text-[#2E4053]">
+            Discover opportunities, track your progress, and connect with
+            professionals. Start your journey now!
+          </p>
+          <img src="" alt="logo" className="mt-8 rounded-lg" />
+        </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={submitHandler} className="space-y-6">
-          <div>
-            <label
-              htmlFor="firstName"
-              className="block text-sm font-medium text-gray-900"
-            >
-              First Name
-            </label>
-            <div className="mt-2">
+        {/* Form Section */}
+        <div className="w-full md:w-1/2 p-8">
+          <h2 className="text-2xl font-bold text-center text-[#1A2E46]">
+            Create an Account
+          </h2>
+          <p className="mt-2 text-sm text-center text-[#7F8C8D]">
+            Please fill in the form below to register.
+          </p>
+
+          <form onSubmit={submitHandler} className="space-y-6 mt-6">
+            <div>
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-[#2E4053]"
+              >
+                First Name
+              </label>
               <input
                 type="text"
                 id="firstName"
@@ -69,19 +82,17 @@ const Register = () => {
                 value={formData.firstName}
                 onChange={handleChange}
                 required
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
               />
             </div>
-          </div>
 
-          <div>
-            <label
-              htmlFor="lastName"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Last Name
-            </label>
-            <div className="mt-2">
+            <div>
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-[#2E4053]"
+              >
+                Last Name
+              </label>
               <input
                 type="text"
                 id="lastName"
@@ -89,19 +100,17 @@ const Register = () => {
                 value={formData.lastName}
                 onChange={handleChange}
                 required
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
               />
             </div>
-          </div>
 
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Email
-            </label>
-            <div className="mt-2">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-[#2E4053]"
+              >
+                Email
+              </label>
               <input
                 type="email"
                 id="email"
@@ -109,19 +118,17 @@ const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
               />
             </div>
-          </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Password
-            </label>
-            <div className="mt-2">
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-[#2E4053]"
+              >
+                Password
+              </label>
               <input
                 type="password"
                 id="password"
@@ -129,55 +136,51 @@ const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
               />
             </div>
-          </div>
 
-          <div>
-            <label
-              htmlFor="role"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Role
-            </label>
-            <div className="mt-2">
+            <div>
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-[#2E4053]"
+              >
+                Role
+              </label>
               <select
                 id="role"
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
               >
                 <option value="user">User</option>
                 <option value="hirer">Hirer</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
-          </div>
 
-          <div>
             <button
               type="submit"
               disabled={btnLoading}
-              className={`flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
-                btnLoading ? "cursor-not-allowed opacity-70" : ""
+              className={`w-full rounded-lg bg-[#1A2E46] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#58A6FF] focus:outline-none focus:ring-2 focus:ring-[#58A6FF] ${
+                btnLoading ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
-              {btnLoading ? "Please Wait..." : "Register"}
+              {btnLoading ? "Please Wait..." : "Create Account"}
             </button>
-          </div>
-        </form>
+          </form>
 
-        <p className="mt-10 text-center text-sm text-gray-500">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="font-semibold text-indigo-600 hover:text-indigo-500"
-          >
-            Login
-          </Link>
-        </p>
+          <p className="mt-6 text-center text-sm text-[#7F8C8D]">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="font-medium text-[#58A6FF] hover:underline"
+            >
+              Login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

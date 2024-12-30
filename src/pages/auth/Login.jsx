@@ -15,84 +15,71 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img alt="Karya" src="logo" className="mx-auto h-10 w-auto" />
-        <h2 className="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">
+    <div className="flex min-h-screen bg-[#FDFEFE] items-center justify-center px-6 py-12">
+      <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-lg">
+        <h2 className="text-3xl font-bold text-center text-[#1A2E46]">
           Sign in to your account
         </h2>
-      </div>
+        <p className="mt-2 text-sm text-center text-[#7F8C8D]">
+          Welcome back! Please enter your credentials to continue.
+        </p>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={submitHandler} className="space-y-6">
+        <form onSubmit={submitHandler} className="space-y-6 mt-8">
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-900"
+              className="block text-sm font-medium text-[#2E4053]"
             >
               Email address
             </label>
-            <div className="mt-2">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
-              />
-            </div>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+            />
           </div>
 
           <div>
             <div className="flex items-center justify-between">
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-900"
+                className="block text-sm font-medium text-[#2E4053]"
               >
                 Password
               </label>
-              <div className="text-sm">
-                <a
-                  href="#"
-                  className="font-semibold text-indigo-600 hover:text-indigo-500"
-                >
-                  Forgot password?
-                </a>
-              </div>
+              <div className="text-sm"></div>
             </div>
-            <div className="mt-2">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
-              />
-            </div>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+            />
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={btnLoading}
-              className={`flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg- focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
-                btnLoading ? "cursor-not-allowed opacity-70" : ""
-              }`}
-            >
-              {btnLoading ? "Please Wait..." : "Sign in"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={btnLoading}
+            className={`w-full rounded-lg bg-[#1A2E46] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#58A6FF] focus:outline-none focus:ring-2 focus:ring-[#58A6FF] ${
+              btnLoading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
+          >
+            {btnLoading ? "Please Wait..." : "Sign in"}
+          </button>
         </form>
 
-        <p className="mt-10 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-[#7F8C8D]">
           Not a member?{" "}
           <Link
-            to="/signup"
-            className="font-semibold text-indigo-600 hover:text-indigo-500"
+            to="/register"
+            className="font-medium text-[#58A6FF] hover:underline"
           >
             Create an account
           </Link>

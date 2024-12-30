@@ -7,11 +7,10 @@ const job_application_backend = "http://localhost:5000";
 const UserContext = createContext();
 
 export const UserContextProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(!!localStorage.getItem("token")); //check token on load
   const [isAuth, setIsAuth] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
 
-  // Login function
   async function login(email, password, navigate) {
     setBtnLoading(true);
     try {
@@ -23,12 +22,21 @@ export const UserContextProvider = ({ children }) => {
         }
       );
 
-      console.log("Token:", data.token); // Log the token
       localStorage.setItem("token", data.token); // Store the token
       setUser(data.user); // Set the user data
       setIsAuth(true);
       setBtnLoading(false);
-      navigate("/");
+
+      // Redirect to the user-specific dashboard based on role
+      if (data.user.role === "admin") {
+        navigate(`/admin/${data.user._id}`);
+      } else if (data.user.role === "hirer") {
+        navigate(`/hirer/${data.user._id}`);
+      } else if (data.user.role === "user") {
+        navigate(`/user/${data.user._id}`);
+      } else {
+        navigate("/"); // Default fallback
+      }
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "Login failed");
@@ -65,6 +73,14 @@ export const UserContextProvider = ({ children }) => {
       setBtnLoading(false);
     }
   }
+
+  // Logout Function
+  const logout = (navigate) => {
+    localStorage.removeItem("token");
+    setUser(null);
+    setIsAuth(false);
+    navigate("/login"); // Redirect to login
+  };
 
   return (
     <UserContext.Provider
