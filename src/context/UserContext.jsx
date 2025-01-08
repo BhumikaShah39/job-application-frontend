@@ -47,6 +47,12 @@ export const UserContextProvider = ({ children }) => {
   async function register(formData, navigate) {
     setBtnLoading(true);
     try {
+      // no registration attempts for admin role
+      if (formData.role === "admin") {
+        toast.error("Cannot register as admin.");
+        setBtnLoading(false);
+        return;
+      }
       const { data } = await axios.post(
         `${job_application_backend}/api/auth/register`,
         formData
@@ -56,7 +62,7 @@ export const UserContextProvider = ({ children }) => {
 
       // auto-login after registration
       if (data.token) {
-        console.log("Token after registration:", data.token); // Log the token
+        //console.log("Token after registration:", data.token); // Log the token
         localStorage.setItem("token", data.token); // Store the token
         setUser(data.user); // Set the user data
         setIsAuth(true);

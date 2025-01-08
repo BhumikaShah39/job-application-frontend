@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { UserData } from "../../context/UserContext";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const FreelancerHeader = () => {
+  const { user } = UserData();
+  const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.reload(); // Reload the page to clear state and redirect
+    navigate("/login");
   };
 
   const toggleDropdown = () => {
@@ -20,7 +23,6 @@ const FreelancerHeader = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Close dropdown when clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -101,13 +103,11 @@ const FreelancerHeader = () => {
             onClick={toggleDropdown}
             className="relative flex items-center gap-x-2"
           >
-            {/* Profile Circle */}
             <div className="w-10 h-10 bg-[#1A2E46] rounded-full flex items-center justify-center text-white font-bold text-lg">
-              P
+              {user?.firstName?.charAt(0).toUpperCase() || "U"}
             </div>
           </button>
 
-          {/* Dropdown Menu */}
           {isDropdownOpen && (
             <div
               ref={dropdownRef}
@@ -116,13 +116,13 @@ const FreelancerHeader = () => {
               <div className="py-2">
                 <Link
                   to="/user/profile"
-                  className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-[#58A6FF] hover:text-white"
+                  className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-gray-100"
                 >
                   View Profile
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-[#58A6FF] hover:bg-[#1A2E46] hover:text-white"
+                  className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
                 >
                   Logout
                 </button>
@@ -175,7 +175,7 @@ const FreelancerHeader = () => {
               </Link>
               <button
                 onClick={handleLogout}
-                className="block w-full text-left text-sm font-medium text-[#58A6FF] hover:text-[#1A2E46]"
+                className="block w-full text-left text-sm font-medium text-red-500 hover:bg-gray-100"
               >
                 Logout
               </button>
