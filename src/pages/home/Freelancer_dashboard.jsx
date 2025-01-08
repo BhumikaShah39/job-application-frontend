@@ -61,13 +61,27 @@ const FreelancerDashboard = () => {
             className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition"
           >
             <h3 className="text-lg font-semibold text-gray-700">{job.title}</h3>
-            <p className="text-sm text-gray-500">{job.description}</p>
+            <p className="text-sm text-gray-500">{job.company}</p>
+            <p className="text-sm text-gray-500">{job.workplaceType}</p>
+            <p className="text-sm text-gray-500">Location: {job.location}</p>
+
             <p className="text-sm text-gray-500">
               Posted by: {job.hirer.firstName} {job.hirer.lastName}
             </p>
-            <button className="mt-4 px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-              Apply Now
-            </button>
+            <div className="flex space-x-2 mt-2">
+              <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
+                {job.category}
+              </p>
+              <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
+                {job.subCategory}
+              </p>
+            </div>
+            <p className="text-sm text-gray-500">Location: {job.description}</p>
+            <div className="mt-4 md:mt-4 md:ml-6">
+              <button className="px-4 py-2 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] whitespace-nowrap">
+                Apply Now
+              </button>
+            </div>
           </div>
         ))}
       </div>

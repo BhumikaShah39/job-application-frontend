@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import KaryaLogo from "../../assets/LogoWithText.png";
 
 const AdminHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

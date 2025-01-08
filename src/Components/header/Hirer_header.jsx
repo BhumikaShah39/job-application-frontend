@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserData } from "../../context/UserContext";
-
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import KaryaLogo from "../../assets/LogoWithText.png";
 
 const HirerHeader = () => {
   const { user } = UserData();
@@ -39,17 +39,19 @@ const HirerHeader = () => {
   }, []);
 
   return (
-    <header className="bg-[#FDFEFE] shadow-md">
+    <header className="bg-[#FDFEFE] shadow-md h-16">
       <nav
-        className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8"
+        className="mx-auto flex max-w-7xl items-center justify-between h-full px-4 lg:px-8"
         aria-label="Global"
       >
         {/* Logo */}
         <Link
-          to={`/hirer/${user?._id}/dashboard`}
+          to={`/hirer/${user?._id}`}
           className="text-2xl font-bold text-[#1A2E46] hover:text-[#58A6FF]"
         >
-          Karya
+          <div className="h-full flex items-center">
+            <img src={KaryaLogo} className="h-16 w-auto" alt="Karya" />
+          </div>
         </Link>
 
         {/* Desktop Navigation Links */}

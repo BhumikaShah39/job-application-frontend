@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserData } from "../../context/UserContext";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import KaryaLogo from "../../assets/LogoWithText.png";
 
 const FreelancerHeader = () => {
   const { user } = UserData();
@@ -44,40 +45,42 @@ const FreelancerHeader = () => {
       >
         {/* Logo */}
         <Link
-          to="/user/dashboard"
+          to={`/user/${user?._id}`}
           className="text-2xl font-bold text-[#1A2E46] hover:text-[#58A6FF]"
         >
-          Karya
+          <div className="h-full flex items-center">
+            <img src={KaryaLogo} className="h-16 w-auto" alt="Karya" />
+          </div>
         </Link>
 
         {/* Desktop Navigation Links */}
         <div className="hidden lg:flex lg:items-center lg:gap-x-6">
           <Link
-            to="/user/job-search"
+            to={`/user/${user?._id}/job-search`}
             className="text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
           >
             Job Search
           </Link>
           <Link
-            to="/user/applications"
+            to={`/user/${user?._id}/applications`}
             className="text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
           >
             Applications
           </Link>
           <Link
-            to="/user/recommendations"
+            to={`/user/${user?._id}/recommendations`}
             className="text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
           >
             Recommendations
           </Link>
           <Link
-            to="/user/analytics"
+            to={`/user/${user?._id}/analytics`}
             className="text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
           >
             Analytics
           </Link>
           <Link
-            to="/user/task-board"
+            to={`/user/${user?._id}/task-board`}
             className="text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
           >
             Task Board

@@ -1,4 +1,5 @@
 import React from "react";
+import KaryaLogo from "../../assets/LogoWithText.png";
 
 const Footer = () => {
   return (
@@ -9,10 +10,9 @@ const Footer = () => {
             href="/"
             className="flex items-center mb-4 sm:mb-0 space-x-3 rtl:space-x-reverse"
           >
-            <img src="" className="h-8" alt="Karya" />
-            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-              Karya
-            </span>
+            <img src={KaryaLogo} className="h-[90px] w-auto" alt="Karya" />
+
+            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
           </a>
           <ul className="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
             <li>

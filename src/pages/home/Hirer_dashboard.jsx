@@ -68,12 +68,15 @@ const HirerDashboard = () => {
                   <p className="text-sm text-gray-500">
                     Job Type: {job.jobType}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    Category: {job.category}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Subcategory: {job.subCategory}
-                  </p>
+                  <div className="flex space-x-2 mt-2">
+                    <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
+                      Category: {job.category}
+                    </p>
+                    <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
+                      Subcategory: {job.subCategory}
+                    </p>
+                  </div>
+
                   <p className="text-sm text-gray-500 mt-2">
                     {job.description}
                   </p>
