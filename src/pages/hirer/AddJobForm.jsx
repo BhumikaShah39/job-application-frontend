@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useLocation } from "react-router-dom";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 const AddJobForm = ({ job_application_backend }) => {
+  //get the job from the location state (edit mode)
+  const location = useLocation();
+  const job = location.state?.job || null;
+
   const [jobData, setJobData] = useState({
     title: "",
     company: "",
@@ -16,6 +21,14 @@ const AddJobForm = ({ job_application_backend }) => {
     notificationPreference: "In-app",
     description: "",
   });
+
+  useEffect(() => {
+    console.log("Job Data:", job);
+    // Will pre-fill form data if in edit mode
+    if (job) {
+      setJobData(job);
+    }
+  }, [job]);
 
   const categories = {
     Technology: [
@@ -47,12 +60,24 @@ const AddJobForm = ({ job_application_backend }) => {
         headers: { Authorization: `Bearer ${token}` },
       };
 
-      const response = await axios.post(
-        `${job_application_backend}/api/jobs/add`,
-        jobData,
-        config
-      );
-      toast.success(response.data.message);
+      if (job) {
+        // Update job
+        await axios.put(
+          `${job_application_backend}/api/jobs/update/${job._id}`,
+          jobData,
+          config
+        );
+        toast.success("Job updated successfully!");
+      } else {
+        // Add job
+        await axios.post(
+          `${job_application_backend}/api/jobs/add`,
+          jobData,
+          config
+        );
+        toast.success("Job added successfully!");
+      }
+
       setJobData({
         title: "",
         company: "",
@@ -62,10 +87,14 @@ const AddJobForm = ({ job_application_backend }) => {
         category: "",
         subCategory: "",
         notificationPreference: "in-app",
+        description: "",
       });
     } catch (error) {
-      console.error("Error adding job:", error.response?.data || error.message);
-      toast.error(error.response?.data?.message || "Failed to add job");
+      console.error(
+        "Error submitting job:",
+        error.response?.data || error.message
+      );
+      toast.error(error.response?.data?.message || "Failed to submit job");
     }
   };
 
@@ -73,7 +102,7 @@ const AddJobForm = ({ job_application_backend }) => {
     <div className="flex min-h-screen bg-[#FDFEFE] items-center justify-center px-4 py-6">
       <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center text-[#1A2E46] mb-6">
-          Add a New Job
+          {job ? "Edit Job" : "Add a New Job"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Job Title */}
@@ -352,7 +381,7 @@ const AddJobForm = ({ job_application_backend }) => {
             type="submit"
             className="w-full bg-[#1A2E46] text-white py-2 px-4 rounded-lg hover:bg-[#58A6FF] focus:outline-none focus:ring-2 focus:ring-[#58A6FF] focus:ring-offset-2"
           >
-            Add Job
+            {job ? "Update Job" : "Add Job"}
           </button>
         </form>
       </div>
