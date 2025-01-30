@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -7,7 +7,8 @@ const job_application_backend = "http://localhost:5000";
 const UserContext = createContext();
 
 export const UserContextProvider = ({ children }) => {
-  const [user, setUser] = useState(!!localStorage.getItem("token")); //check token on load
+  const [user, setUser] = useState(null); // Start with null
+
   const [isAuth, setIsAuth] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
 
@@ -62,7 +63,6 @@ export const UserContextProvider = ({ children }) => {
 
       // auto-login after registration
       if (data.token) {
-        //console.log("Token after registration:", data.token); // Log the token
         localStorage.setItem("token", data.token); // Store the token
         setUser(data.user); // Set the user data
         setIsAuth(true);
@@ -88,9 +88,52 @@ export const UserContextProvider = ({ children }) => {
     navigate("/login"); // Redirect to login
   };
 
+  const refreshUser = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.warn("No token found in localStorage.");
+      return;
+    }
+    try {
+      const { data } = await axios.get(
+        `${job_application_backend}/api/users/current`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (data?.user) {
+        console.log("Fetched user data in refreshUser:", data.user);
+        setUser(data.user);
+        setIsAuth(true);
+      } else {
+        console.error("User data is undefined in API response.");
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+      setUser(null);
+      setIsAuth(false);
+    }
+  };
+  useEffect(() => {
+    console.log("Updated user data:", user);
+  }, [user]);
+
+  useEffect(() => {
+    refreshUser();
+  }, []);
+
   return (
     <UserContext.Provider
-      value={{ user, setUser, isAuth, setIsAuth, login, register, btnLoading }}
+      value={{
+        user,
+        setUser,
+        isAuth,
+        setIsAuth,
+        login,
+        register,
+        btnLoading,
+        refreshUser,
+      }}
     >
       {children}
       <Toaster />

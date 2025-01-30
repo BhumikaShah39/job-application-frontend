@@ -25,6 +25,7 @@ import ManagePosts from "./pages/admin/ManagePosts";
 import PrivateRoute from "./Components/PrivateRoute";
 import { UserData } from "./context/UserContext";
 import Footer from "./Components/footer/Footer";
+import CompleteProfileForm from "./pages/freelancer/CompleteProfileForm";
 
 const App = () => {
   const { user, isAuth } = UserData();
@@ -101,6 +102,15 @@ const App = () => {
               element={
                 <PrivateRoute allowedRoles={["admin"]}>
                   <ManagePosts />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/complete-profile"
+              element={
+                <PrivateRoute allowedRoles={["user"]}>
+                  <CompleteProfileForm />
                 </PrivateRoute>
               }
             />

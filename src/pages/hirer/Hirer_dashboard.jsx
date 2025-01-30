@@ -109,15 +109,6 @@ const HirerDashboard = () => {
                 </div>
                 {/* Action Button */}
                 <div className="mt-4 md:mt-0 md:ml-6 flex space-x-4 items-center">
-                  {/* <button
-                    onClick={() =>
-                      navigate(`/hirer/${user._id}/jobs/${job._id}`)
-                    }
-                    className="px-4 py-2 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] whitespace-nowrap"
-                  >
-                    View Details
-                  </button> */}
-
                   <button
                     onClick={() => setDeleteJobId(job._id)}
                     className="flex items-center bg-transparent hover:bg-red-100 text-red-600 font-semibold py-2 px-4 border border-red-400 rounded hover:border-red-500"

@@ -367,7 +367,7 @@ const AddJobForm = ({ job_application_backend }) => {
               onChange={handleChange}
               placeholder="Enter job description"
               className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-4 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
-              rows={15} // Set default height to display more text
+              rows={15}
               style={{
                 resize: "none", // Prevent resizing
                 whiteSpace: "pre-wrap", // Preserve line breaks and spacing
