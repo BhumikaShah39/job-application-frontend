@@ -84,7 +84,7 @@ const FreelancerLayout = ({ children }) => {
                 to={`/user/${user?._id}/applications`}
                 className="block text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
               >
-                Applications
+                My Applications
               </Link>
             </li>
             <li>
