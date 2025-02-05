@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import KaryaLogo from "../../assets/LogoWithText.png";
 
 const job_application_backend = "http://localhost:5000";
 
@@ -48,6 +49,7 @@ const Register = () => {
       <div className="flex w-full max-w-5xl overflow-hidden bg-white shadow-lg rounded-lg">
         {/* Branding Section */}
         <div className="w-1/2 bg-[#E8EEF1] p-8 hidden md:flex flex-col justify-center">
+          <img src={KaryaLogo} className="h-26 w-auto mr-4" alt="Karya" />
           <h1 className="text-3xl font-bold text-[#1A2E46]">
             Join Karya Today
           </h1>
@@ -55,7 +57,6 @@ const Register = () => {
             Discover opportunities, track your progress, and connect with
             professionals. Start your journey now!
           </p>
-          <img src="" alt="logo" className="mt-8 rounded-lg" />
         </div>
 
         {/* Form Section */}
@@ -118,7 +119,23 @@ const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+                className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053]"
+                // <-- OVERRIDE BROWSER MESSAGES BELOW
+                onInvalid={(e) => {
+                  // If the user left it empty
+                  if (!e.target.value) {
+                    e.target.setCustomValidity("Email is required.");
+                  } else {
+                    // If it’s not empty but fails the type="email" check
+                    e.target.setCustomValidity(
+                      "Please enter a valid email address."
+                    );
+                  }
+                }}
+                onInput={(e) => {
+                  // Clear custom messages once the user starts typing again
+                  e.target.setCustomValidity("");
+                }}
               />
             </div>
 

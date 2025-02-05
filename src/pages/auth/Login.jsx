@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserData } from "../../context/UserContext";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,7 +12,21 @@ const Login = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    await login(email, password, navigate); // Pass the email, password, and navigate function
+
+    // 1) Check if email is empty
+    if (!email.trim()) {
+      toast.error("Email cannot be empty");
+      return;
+    }
+
+    // 2) Check if password is empty
+    if (!password.trim()) {
+      toast.error("Password cannot be empty");
+      return;
+    }
+
+    // 3) If both fields have values, proceed
+    await login(email, password, navigate);
   };
 
   return (
@@ -24,7 +39,8 @@ const Login = () => {
           Welcome back! Please enter your credentials to continue.
         </p>
 
-        <form onSubmit={submitHandler} className="space-y-6 mt-8">
+        {/* Use noValidate on the form if you want to avoid the native HTML5 popups */}
+        <form onSubmit={submitHandler} noValidate className="space-y-6 mt-8">
           <div>
             <label
               htmlFor="email"
@@ -35,8 +51,7 @@ const Login = () => {
             <input
               id="email"
               name="email"
-              type="email"
-              required
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
@@ -51,13 +66,11 @@ const Login = () => {
               >
                 Password
               </label>
-              <div className="text-sm"></div>
             </div>
             <input
               id="password"
               name="password"
               type="password"
-              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
