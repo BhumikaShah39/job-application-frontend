@@ -27,185 +27,189 @@ import PrivateRoute from "./Components/PrivateRoute";
 import { UserData } from "./context/UserContext";
 import MyApplications from "./pages/freelancer/MyApplications";
 
+import { NotificationProvider } from "./context/NotificationContext";
+
 function App() {
   const { user, isAuth } = UserData();
 
   return (
-    <Router>
-      <div className="flex flex-col min-h-screen">
-        <div className="flex-grow">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <Header />
-                  <Home />
-                </>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <>
-                  <Header />
-                  <Login />
-                </>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <>
-                  <Header />
-                  <Register />
-                </>
-              }
-            />
+    <NotificationProvider>
+      <Router>
+        <div className="flex flex-col min-h-screen">
+          <div className="flex-grow">
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <>
+                    <Header />
+                    <Home />
+                  </>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <>
+                    <Header />
+                    <Login />
+                  </>
+                }
+              />
+              <Route
+                path="/register"
+                element={
+                  <>
+                    <Header />
+                    <Register />
+                  </>
+                }
+              />
 
-            {/* FREELANCER Routes */}
-            <Route
-              path="/user/:id"
-              element={
-                <PrivateRoute allowedRoles={["user"]}>
-                  <FreelancerLayout>
-                    <FreelancerDashboard />
-                  </FreelancerLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/complete-profile"
-              element={
-                <PrivateRoute allowedRoles={["user"]}>
-                  <FreelancerLayout>
-                    <CompleteProfileForm />
-                  </FreelancerLayout>
-                </PrivateRoute>
-              }
-            />
+              {/* FREELANCER Routes */}
+              <Route
+                path="/user/:id"
+                element={
+                  <PrivateRoute allowedRoles={["user"]}>
+                    <FreelancerLayout>
+                      <FreelancerDashboard />
+                    </FreelancerLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/complete-profile"
+                element={
+                  <PrivateRoute allowedRoles={["user"]}>
+                    <FreelancerLayout>
+                      <CompleteProfileForm />
+                    </FreelancerLayout>
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/user/:id/applications"
-              element={
-                <PrivateRoute allowedRoles={["user"]}>
-                  <FreelancerLayout>
-                    <MyApplications />
-                  </FreelancerLayout>
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/user/:id/applications"
+                element={
+                  <PrivateRoute allowedRoles={["user"]}>
+                    <FreelancerLayout>
+                      <MyApplications />
+                    </FreelancerLayout>
+                  </PrivateRoute>
+                }
+              />
 
-            {/* HIRER Routes */}
-            <Route
-              path="/hirer/:id"
-              element={
-                <PrivateRoute allowedRoles={["hirer"]}>
-                  <HirerLayout>
-                    <HirerDashboard />
-                  </HirerLayout>
-                </PrivateRoute>
-              }
-            />
+              {/* HIRER Routes */}
+              <Route
+                path="/hirer/:id"
+                element={
+                  <PrivateRoute allowedRoles={["hirer"]}>
+                    <HirerLayout>
+                      <HirerDashboard />
+                    </HirerLayout>
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/hirer/:id/add-jobs"
-              element={
-                <PrivateRoute allowedRoles={["hirer"]}>
-                  <HirerLayout>
-                    <AddJobForm job_application_backend="http://localhost:5000" />
-                  </HirerLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/hirer/:id/edit-job"
-              element={
-                <PrivateRoute allowedRoles={["hirer"]}>
-                  <HirerLayout>
-                    <AddJobForm job_application_backend="http://localhost:5000" />
-                  </HirerLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/hirer/:id/applications"
-              element={
-                <PrivateRoute allowedRoles={["hirer"]}>
-                  <HirerLayout>
-                    <Applications />
-                  </HirerLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/hirer/:id/analytics"
-              element={
-                <PrivateRoute allowedRoles={["hirer"]}>
-                  <HirerLayout>
-                    <Analytics />
-                  </HirerLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/hirer/:id/notifications"
-              element={
-                <PrivateRoute allowedRoles={["hirer"]}>
-                  <HirerLayout>
-                    <Notifications />
-                  </HirerLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/hirer/:id/projects"
-              element={
-                <PrivateRoute allowedRoles={["hirer"]}>
-                  <HirerLayout>
-                    <Projects />
-                  </HirerLayout>
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/hirer/:id/add-jobs"
+                element={
+                  <PrivateRoute allowedRoles={["hirer"]}>
+                    <HirerLayout>
+                      <AddJobForm job_application_backend="http://localhost:5000" />
+                    </HirerLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/hirer/:id/edit-job"
+                element={
+                  <PrivateRoute allowedRoles={["hirer"]}>
+                    <HirerLayout>
+                      <AddJobForm job_application_backend="http://localhost:5000" />
+                    </HirerLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/hirer/:id/applications"
+                element={
+                  <PrivateRoute allowedRoles={["hirer"]}>
+                    <HirerLayout>
+                      <Applications />
+                    </HirerLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/hirer/:id/analytics"
+                element={
+                  <PrivateRoute allowedRoles={["hirer"]}>
+                    <HirerLayout>
+                      <Analytics />
+                    </HirerLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/hirer/:id/notifications"
+                element={
+                  <PrivateRoute allowedRoles={["hirer"]}>
+                    <HirerLayout>
+                      <Notifications />
+                    </HirerLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/hirer/:id/projects"
+                element={
+                  <PrivateRoute allowedRoles={["hirer"]}>
+                    <HirerLayout>
+                      <Projects />
+                    </HirerLayout>
+                  </PrivateRoute>
+                }
+              />
 
-            {/* ADMIN Routes */}
-            <Route
-              path="/admin/:id"
-              element={
-                <PrivateRoute allowedRoles={["admin"]}>
-                  <AdminLayout>
-                    <AdminDashboard />
-                  </AdminLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/admin/manage-members"
-              element={
-                <PrivateRoute allowedRoles={["admin"]}>
-                  <AdminLayout>
-                    <ManageMembers />
-                  </AdminLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/admin/manage-posts"
-              element={
-                <PrivateRoute allowedRoles={["admin"]}>
-                  <AdminLayout>
-                    <ManagePosts />
-                  </AdminLayout>
-                </PrivateRoute>
-              }
-            />
-          </Routes>
+              {/* ADMIN Routes */}
+              <Route
+                path="/admin/:id"
+                element={
+                  <PrivateRoute allowedRoles={["admin"]}>
+                    <AdminLayout>
+                      <AdminDashboard />
+                    </AdminLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/admin/manage-members"
+                element={
+                  <PrivateRoute allowedRoles={["admin"]}>
+                    <AdminLayout>
+                      <ManageMembers />
+                    </AdminLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/admin/manage-posts"
+                element={
+                  <PrivateRoute allowedRoles={["admin"]}>
+                    <AdminLayout>
+                      <ManagePosts />
+                    </AdminLayout>
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </div>
+          {/* Always show Footer at bottom */}
+          <Footer />
         </div>
-        {/* Always show Footer at bottom */}
-        <Footer />
-      </div>
-    </Router>
+      </Router>
+    </NotificationProvider>
   );
 }
 

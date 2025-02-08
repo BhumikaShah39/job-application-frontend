@@ -79,8 +79,8 @@ const FreelancerDashboard = () => {
 
     if (activeTab === "Recent") {
       filtered = jobs;
-    } else if (activeTab === "Featured") {
-      filtered = jobs.filter((job) => job.featured);
+    } else if (activeTab === "Saved") {
+      filtered = jobs.filter((job) => job.saved);
     } else if (activeTab === "Recommended") {
       filtered = jobs.filter((job) => job.recommended);
     }
@@ -144,7 +144,7 @@ const FreelancerDashboard = () => {
 
           {/* Tab Navigation */}
           <div className="flex space-x-4 mb-6">
-            {["Recommended", "Featured", "Recent"].map((tab) => (
+            {["Recommended", "Recent", "Saved"].map((tab) => (
               <button
                 key={tab}
                 className={`px-4 py-2 rounded-lg font-medium ${
