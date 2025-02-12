@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 // Data for categories and subcategories
 const interestsData = {
@@ -8,15 +9,61 @@ const interestsData = {
     "Data Science",
     "Cybersecurity",
     "IT Support",
+    "Cloud Computing",
+    "Mobile App Development",
+    "DevOps Engineering",
+    "Network Administration",
   ],
-  Design: ["Graphic Design", "UI/UX Design", "Product Design", "Animation"],
+  Design: [
+    "Graphic Design",
+    "UI/UX Design",
+    "Product Design",
+    "Animation",
+    "3D Modeling",
+    "Web Design",
+    "Illustration",
+    "Motion Graphics",
+  ],
   Marketing: [
     "Digital Marketing",
     "SEO / SEM",
     "Content Marketing",
     "Social Media Management",
+    "Affiliate Marketing",
+    "Email Marketing",
+    "Brand Management",
   ],
-  Writing: ["Content Writing", "Technical Writing", "Translation Services"],
+  Writing: [
+    "Content Writing",
+    "Technical Writing",
+    "Translation Services",
+    "Copywriting",
+    "Proofreading & Editing",
+    "Blog Writing",
+  ],
+  Business: [
+    "Business Consulting",
+    "Project Management",
+    "Human Resources",
+    "Accounting & Bookkeeping",
+    "Financial Analysis",
+    "Sales Strategy",
+  ],
+  Education: [
+    "Online Tutoring",
+    "Curriculum Development",
+    "E-Learning Development",
+    "Academic Research",
+    "Corporate Training",
+  ],
+  Media: [
+    "Video Production",
+    "Photography",
+    "Podcast Production",
+    "Voice-over Services",
+    "Video Editing",
+    "Content Creation",
+  ],
 };
 
 const CompleteProfileForm = () => {
@@ -79,85 +126,105 @@ const CompleteProfileForm = () => {
       );
 
       if (response.status === 200) {
-        alert("Profile completed successfully!");
+        toast.success("Profile completed successfully!");
         window.location.href = `/user/${response.data.user._id}`; // Redirect to the user's dashboard
       }
     } catch (error) {
       console.error("Error completing profile:", error);
-      alert("Failed to complete profile. Please try again.");
+      toast.error("Failed to complete profile. Please try again.");
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-6 bg-white shadow-lg rounded-lg max-w-2xl mx-auto"
+      className="p-8 bg-white shadow-md rounded-xl max-w-3xl mx-auto border border-gray-200"
     >
-      <h2 className="text-2xl font-bold mb-6">Complete Your Profile</h2>
+      <h2 className="text-3xl font-bold mb-6 text-[#1A2E46] text-center">
+        Complete Your Profile
+      </h2>
 
       {/* Profile Picture */}
-      <div className="mb-4">
-        <label className="block font-medium mb-2">Profile Picture</label>
+      <div className="space-y-4">
+        <label className="block font-medium mb-2 text-[#1A2E46]">
+          Profile Picture
+        </label>
         <input
           type="file"
           accept="image/*"
           onChange={(e) => setProfilePicture(e.target.files[0])}
-          className="w-full border rounded-lg p-2"
+          className="w-full border rounded-md p-2"
         />
       </div>
 
-      {/* Interests */}
-      <div className="mb-4">
-        <label className="block font-medium mb-2">Select Your Interests</label>
-        {!selectedCategory &&
-          Object.keys(interestsData).map((category) => (
-            <button
-              key={category}
-              type="button"
-              className="px-4 py-2 m-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              onClick={() => handleCategoryClick(category)}
-            >
-              {category}
-            </button>
-          ))}
+      <div className="mb-6">
+        <label className="block text-xl font-semibold text-[#1A2E46] mb-4">
+          Select Your Interests
+        </label>
 
-        {selectedCategory && (
-          <div>
-            <h3 className="text-lg font-semibold mb-2">
-              Select Subcategories for {selectedCategory}
-            </h3>
-            {interestsData[selectedCategory].map((subcategory) => (
+        {!selectedCategory ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {Object.keys(interestsData).map((category) => (
               <button
-                key={subcategory}
+                key={category}
                 type="button"
-                className={`px-4 py-2 m-2 rounded ${
-                  selectedInterests.includes(subcategory)
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-300 text-black hover:bg-gray-400"
-                }`}
-                onClick={() => handleSubcategoryClick(subcategory)}
+                className="px-4 py-2 bg-[#58A6FF80] text-[#1A2E46] rounded-md hover:bg-[#1A2E46] hover:text-white transition-transform transform hover:scale-105"
+                onClick={() => handleCategoryClick(category)}
               >
-                {subcategory}
+                {category}
               </button>
             ))}
+          </div>
+        ) : (
+          <div>
+            <h3 className="text-xl font-semibold text-[#1A2E46] mb-2">
+              Subcategories for{" "}
+              <span className="text-[#58A6FF]">{selectedCategory}</span>
+            </h3>
+            <hr className="border-t-2 border-[#58A6FF] mb-4" />
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {interestsData[selectedCategory].map((subcategory) => (
+                <button
+                  key={subcategory}
+                  type="button"
+                  className={`px-3 py-2 rounded-md shadow-sm transition-transform transform hover:scale-105 ${
+                    selectedInterests.includes(subcategory)
+                      ? "bg-[#58A6FF] text-white"
+                      : "bg-[#58A6FF40] text-[#1A2E46] hover:bg-[#1A2E46] hover:text-white"
+                  }`}
+                  onClick={() => handleSubcategoryClick(subcategory)}
+                >
+                  {subcategory}
+                </button>
+              ))}
+            </div>
+
             <button
               type="button"
-              className="block mt-4 text-blue-500 underline"
+              className="mt-4 flex items-center text-[#58A6FF] hover:text-[#1A2E46]"
               onClick={() => setSelectedCategory(null)}
             >
-              Back to Categories
+              <span className="mr-2">←</span> Back to Categories
             </button>
           </div>
         )}
 
         {selectedInterests.length > 0 && (
-          <div className="mt-4">
-            <h4 className="text-sm font-semibold">Selected Interests:</h4>
-            <ul className="list-disc list-inside">
+          <div className="mt-6">
+            <h4 className="text-lg font-semibold text-[#1A2E46] mb-2">
+              Selected Interests:
+            </h4>
+            <div className="flex flex-wrap gap-2">
               {selectedInterests.map((interest, index) => (
-                <li key={index}>{interest}</li>
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-[#58A6FF20] text-[#1A2E46] rounded-full shadow-sm border border-[#58A6FF]"
+                >
+                  {interest}
+                </span>
               ))}
-            </ul>
+            </div>
           </div>
         )}
       </div>
@@ -194,7 +261,7 @@ const CompleteProfileForm = () => {
         <button
           type="button"
           onClick={() => handleAddField(setEducation, education)}
-          className="text-blue-500 font-bold"
+          className="text-[#1A2E46] font-bold hover:text-[#58A6FF]"
         >
           + Add More
         </button>
@@ -296,7 +363,7 @@ const CompleteProfileForm = () => {
         <button
           type="button"
           onClick={() => handleAddField(setExperience, experience)}
-          className="text-blue-500 font-bold"
+          className="text-[#1A2E46] font-bold hover:text-[#58A6FF]"
         >
           + Add More
         </button>

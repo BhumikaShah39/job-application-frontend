@@ -6,8 +6,7 @@ const ProfileCompletionPopup = ({ onClose, onComplete }) => {
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-xl font-bold mb-4">Complete Your Profile</h2>
         <p className="text-gray-600 mb-6">
-          Completing your profile helps improve your visibility to hirers and
-          increases your chances of getting hired!
+          Completing your profile for easier job application process!!
         </p>
         <div className="flex justify-end space-x-4">
           <button
@@ -17,7 +16,9 @@ const ProfileCompletionPopup = ({ onClose, onComplete }) => {
             I'll do it later
           </button>
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 rounded-lg font-medium 
+             bg-[#58A6FF] text-white 
+             hover:bg-[#1A2E46] hover:text-white"
             onClick={onComplete}
           >
             Complete Now

@@ -5,18 +5,20 @@ import { useNavigate } from "react-router-dom";
 import ProfileCompletionPopup from "./ProfileCompletionPopup";
 import DefaultProfileImage from "../../assets/DefaultProfileImage.avif";
 import JobApplicationForm from "./JobApplicationForm";
+import { FaRegBookmark, FaBookmark } from "react-icons/fa";
 
 const FreelancerDashboard = () => {
   const { user, isAuth, refreshUser } = UserData();
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("Recent");
+  const [activeTab, setActiveTab] = useState("Most Recent");
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate(); // Hook to handle navigation
   console.log(user.profilePicture);
   const [selectedJobId, setSelectedJobId] = useState(null); // Track the job ID for application
   const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [savedJobs, setSavedJobs] = useState([]);
 
   useEffect(() => {
     console.log("User data in FreelancerDashboard:", user);
@@ -75,12 +77,57 @@ const FreelancerDashboard = () => {
   }, [user, isAuth]);
 
   useEffect(() => {
+    const fetchSavedJobs = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const { data } = await axios.get(
+          "http://localhost:5000/api/saved-jobs",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        console.log("Saved jobs:", data);
+        setSavedJobs(data.map((job) => job.jobId._id)); // Store saved job IDs
+      } catch (error) {
+        console.error("Error fetching saved jobs:", error);
+      }
+    };
+
+    if (isAuth && user) fetchSavedJobs();
+  }, [isAuth, user]);
+
+  const handleSaveJob = async (jobId, isSaved) => {
+    try {
+      console.log("Saving Job ID:", jobId);
+      const token = localStorage.getItem("token");
+      if (isSaved) {
+        await axios.delete(
+          `http://localhost:5000/api/saved-jobs/unsave/${jobId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setSavedJobs((prev) => prev.filter((id) => id !== jobId));
+      } else {
+        await axios.post(
+          "http://localhost:5000/api/saved-jobs/save",
+          { jobId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSavedJobs((prev) => [...prev, jobId]);
+      }
+    } catch (error) {
+      console.error("Error saving/unsaving job:", error);
+    }
+  };
+
+  useEffect(() => {
     let filtered = jobs;
 
-    if (activeTab === "Recent") {
+    if (activeTab === "Most Recent") {
       filtered = jobs;
-    } else if (activeTab === "Saved") {
-      filtered = jobs.filter((job) => job.saved);
+    } else if (activeTab === "Saved Jobs") {
+      filtered = jobs.filter((job) => savedJobs.includes(job._id));
     } else if (activeTab === "Recommended") {
       filtered = jobs.filter((job) => job.recommended);
     }
@@ -92,7 +139,7 @@ const FreelancerDashboard = () => {
     }
 
     setFilteredJobs(filtered);
-  }, [searchTerm, jobs, activeTab]);
+  }, [searchTerm, jobs, activeTab, savedJobs]);
 
   return (
     <div>
@@ -144,7 +191,7 @@ const FreelancerDashboard = () => {
 
           {/* Tab Navigation */}
           <div className="flex space-x-4 mb-6">
-            {["Recommended", "Recent", "Saved"].map((tab) => (
+            {["Recommended", "Most Recent", "Saved Jobs"].map((tab) => (
               <button
                 key={tab}
                 className={`px-4 py-2 rounded-lg font-medium ${
@@ -161,56 +208,68 @@ const FreelancerDashboard = () => {
 
           {/* Stacked Job List */}
           <div className="mt-6 space-y-4">
-            {filteredJobs.map((job) => (
-              <div
-                key={job._id}
-                className="relative p-6 bg-white rounded-lg shadow hover:shadow-lg transition flex flex-col"
-              >
-                {/* Apply Now Button */}
-                <button
-                  onClick={() => handleApply(job._id)}
-                  className="absolute top-4 right-4 px-4 py-2 rounded-lg font-medium 
-             bg-[#58A6FF] text-white 
-             hover:bg-[#1A2E46] hover:text-white"
+            {filteredJobs.map((job) => {
+              const isSaved = savedJobs.includes(job._id); // Check if the job is saved
+              return (
+                <div
+                  key={job._id}
+                  className="relative p-6 bg-white rounded-lg shadow hover:shadow-lg transition flex flex-col"
                 >
-                  Apply Now
-                </button>
+                  <div className="flex justify-end items-center space-x-3 mt-2">
+                    {/* Save/Unsave Button */}
+                    <button
+                      onClick={() =>
+                        handleSaveJob(job._id, isSaved, setSavedJobs)
+                      }
+                      className={`p-2 rounded-full transition-transform transform hover:scale-110 ${
+                        isSaved
+                          ? "bg-white text-[#58A6FF]"
+                          : "bg-gray-300 text-[#1A2E46]"
+                      }`}
+                      title={isSaved ? "Unsave Job" : "Save Job"} // Tooltip
+                    >
+                      {isSaved ? (
+                        <FaBookmark size={20} /> // Filled bookmark (saved)
+                      ) : (
+                        <FaRegBookmark size={20} /> // Outline bookmark (unsaved)
+                      )}
+                    </button>
 
-                {/* Job Details */}
-                <div className="flex-grow">
-                  <h3 className="text-xl font-bold text-gray-700">
-                    {job.title}
-                  </h3>
-                  <p className="text-sm text-gray-500">{job.company}</p>
-                  <p className="text-sm text-gray-500">{job.workplaceType}</p>
-                  <p className="text-sm text-gray-500">
-                    Location: {job.location}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Job Type: {job.jobType}
-                  </p>
-                  <div className="flex space-x-2 mt-2">
-                    <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
-                      Category: {job.category}
-                    </p>
-                    <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
-                      Subcategory: {job.subCategory}
-                    </p>
+                    {/* Apply Now Button */}
+                    <button
+                      onClick={() => handleApply(job._id)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold bg-[#58A6FF] text-white hover:bg-[#1A2E46] hover:text-white transition duration-300 ease-in-out"
+                    >
+                      Apply Now
+                    </button>
                   </div>
-                  <div className="flex space-x-2 mt-2">
-                    {job.tags?.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+
+                  {/* Job Details */}
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-bold text-gray-700">
+                      {job.title}
+                    </h3>
+                    <p className="text-sm text-gray-500">{job.company}</p>
+                    <p className="text-sm text-gray-500">{job.workplaceType}</p>
+                    <p className="text-sm text-gray-500">
+                      Location: {job.location}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Job Type: {job.jobType}
+                    </p>
+                    <div className="flex space-x-2 mt-2">
+                      <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
+                        Category: {job.category}
+                      </p>
+                      <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
+                        Subcategory: {job.subCategory}
+                      </p>
+                    </div>
+                    <p className="mt-2 text-gray-500">{job.description}</p>
                   </div>
-                  <p className="mt-2 text-gray-500">{job.description}</p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

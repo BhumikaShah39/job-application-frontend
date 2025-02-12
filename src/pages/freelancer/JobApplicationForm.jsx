@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { UserData } from "../../context/UserContext";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const JobApplicationForm = ({ jobId, onClose }) => {
   const { user } = UserData();
@@ -8,10 +9,15 @@ const JobApplicationForm = ({ jobId, onClose }) => {
   const [resume, setResume] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  console.log("JobApplicationForm rendered for job ID:", jobId);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const wordCount = coverLetter.trim().split(/\s+/).length;
+
+    if (wordCount < 100) {
+      toast.error("Cover letter must be at least 100 words.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("coverLetter", coverLetter);
@@ -33,13 +39,13 @@ const JobApplicationForm = ({ jobId, onClose }) => {
         }
       );
 
-      alert("Application submitted successfully!");
+      toast.success("Application submitted successfully!");
       setIsSubmitting(false);
       onClose(); // Close the form on success
     } catch (error) {
       console.error("Error submitting application:", error);
       setIsSubmitting(false);
-      alert("Failed to submit application.");
+      toast.error("Failed to submit application.");
     }
   };
 
