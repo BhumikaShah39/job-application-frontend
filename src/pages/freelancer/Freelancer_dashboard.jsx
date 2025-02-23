@@ -6,19 +6,41 @@ import ProfileCompletionPopup from "./ProfileCompletionPopup";
 import DefaultProfileImage from "../../assets/DefaultProfileImage.avif";
 import JobApplicationForm from "./JobApplicationForm";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa";
+import {
+  FaChevronDown,
+  FaChevronUp,
+  FaFilter,
+  FaHistory,
+} from "react-icons/fa"; // Dropdown icons
+import { useRef } from "react"; // Import useRef
+
+const categories = [
+  "Technology",
+  "Design",
+  "Marketing",
+  "Writing",
+  "Business",
+  "Education",
+  "Media",
+];
 
 const FreelancerDashboard = () => {
   const { user, isAuth, refreshUser } = UserData();
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("Most Recent");
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate(); // Hook to handle navigation
-  console.log(user.profilePicture);
+
   const [selectedJobId, setSelectedJobId] = useState(null); // Track the job ID for application
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [savedJobs, setSavedJobs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const [showFilters, setShowFilters] = useState(false);
+  const [searchHistory, setSearchHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false); // Show/hide history
 
   useEffect(() => {
     console.log("User data in FreelancerDashboard:", user);
@@ -121,6 +143,43 @@ const FreelancerDashboard = () => {
     }
   };
 
+  const handleSearch = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const { data } = await axios.get(
+        "http://localhost:5000/api/jobs/search",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            searchTerm,
+            categories,
+            sortBy,
+          },
+        }
+      );
+
+      setFilteredJobs(data.jobs);
+    } catch (error) {
+      console.error("Error fetching filtered jobs:", error);
+    }
+  };
+
+  const searchRef = useRef(null); // Create a ref for the search box
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowHistory(false); // Close search history when clicking outside
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     let filtered = jobs;
 
@@ -138,8 +197,44 @@ const FreelancerDashboard = () => {
       );
     }
 
+    if (selectedCategory) {
+      filtered = filtered.filter((job) => job.category === selectedCategory);
+    }
+
     setFilteredJobs(filtered);
-  }, [searchTerm, jobs, activeTab, savedJobs]);
+  }, [searchTerm, jobs, activeTab, savedJobs, selectedCategory]);
+
+  useEffect(() => {
+    const fetchSearchHistory = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const { data } = await axios.get(
+          "http://localhost:5000/api/jobs/search-history",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        console.log("Fetched Search History:", data.searchHistory); // Debugging
+        setSearchHistory(data.searchHistory || []);
+      } catch (error) {
+        console.error("Error fetching search history:", error);
+      }
+    };
+
+    if (isAuth) fetchSearchHistory();
+  }, [isAuth]);
+
+  // Handle Search Input Change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    if (e.target.value.length > 0) {
+      setShowHistory(true);
+    }
+  };
+
+  //  Select Search Term from History
+  const selectSearchTerm = (term) => {
+    setSearchTerm(term);
+    setShowHistory(false); // Hide history after selecting
+  };
 
   return (
     <div>
@@ -178,15 +273,99 @@ const FreelancerDashboard = () => {
             Search for Jobs
           </h2>
 
-          {/* Search Filter */}
-          <div className="mt-4">
-            <input
-              type="text"
-              placeholder="Search for jobs..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 mb-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          {/* Search Bar & Filters */}
+
+          {/* Search Bar & Filters */}
+          <div className="flex items-center gap-4 mb-6 relative">
+            {/* Search Input */}
+            <div ref={searchRef} className="relative w-full lg:w-1/2">
+              <input
+                type="text"
+                placeholder="Search by job title, company name, or location..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+              />
+
+              {/* Search History Dropdown */}
+              {showHistory && searchHistory.length > 0 && (
+                <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg rounded-md mt-1 z-50 overflow-hidden">
+                  {searchHistory.map((history, index) => (
+                    <li
+                      key={index}
+                      onClick={() => selectSearchTerm(history.searchTerm)}
+                      className="flex items-center p-3 cursor-pointer hover:bg-gray-200 transition-all"
+                    >
+                      <FaHistory className="text-gray-500 mr-2" />{" "}
+                      {history.searchTerm}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Filters Button */}
+            <div className="relative">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-4 py-2 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] focus:outline-none"
+              >
+                <FaFilter />
+                Filters
+                {showFilters ? <FaChevronUp /> : <FaChevronDown />}
+              </button>
+
+              {/* Dropdown Filters */}
+              {showFilters && (
+                <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-3 z-20">
+                  {/* Categories */}
+                  <h3 className="text-sm font-bold text-gray-700 mb-2">
+                    Categories
+                  </h3>
+                  <ul>
+                    {categories.map((category) => (
+                      <li
+                        key={category}
+                        className={`p-2 hover:bg-gray-200 cursor-pointer ${
+                          selectedCategory === category
+                            ? "font-bold text-[#58A6FF]"
+                            : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedCategory((prev) =>
+                            prev === category ? "" : category
+                          ); // Toggle selection
+                          setShowFilters(false); // Close dropdown after selection
+                        }}
+                      >
+                        {category}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Sorting */}
+                  <h3 className="text-sm font-bold text-gray-700 mt-3 mb-2">
+                    Sort By
+                  </h3>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full p-2 border rounded-md"
+                  >
+                    <option value="newest">Newest</option>
+                    <option value="oldest">Oldest</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Search Button */}
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46]"
+            >
+              Search
+            </button>
           </div>
 
           {/* Tab Navigation */}

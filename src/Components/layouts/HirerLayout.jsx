@@ -18,6 +18,15 @@ const HirerLayout = ({ children }) => {
   const notificationRef = useRef(null);
   const profileRef = useRef(null);
 
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  useEffect(() => {
+    const unreadNotifications = notifications.filter((notif) => !notif.isRead);
+    setUnreadCount(unreadNotifications.length);
+  }, [notifications]);
+
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -50,7 +59,6 @@ const HirerLayout = ({ children }) => {
     setIsDropdownOpen((prev) => !prev);
     if (!isDropdownOpen) {
       markAllAsRead();
-      setUnreadCount(0); // Mark notifications as viewed
     }
   };
   const handleLogout = () => {
@@ -68,11 +76,6 @@ const HirerLayout = ({ children }) => {
   const toggleProfileDropdown = () => {
     setIsProfileOpen((prev) => !prev);
   };
-
-  useEffect(() => {
-    const unreadNotifications = notifications.filter((notif) => !notif.isRead);
-    setUnreadCount(unreadNotifications.length);
-  }, [notifications]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -199,7 +202,7 @@ const HirerLayout = ({ children }) => {
             {isDropdownOpen && (
               <div
                 ref={notificationRef}
-                className="absolute right-0 mt-40 w-64 bg-white shadow-lg rounded-md p-3 border border-gray-200 z-50"
+                className="absolute right-0 top-full mt-2 w-64 bg-white shadow-lg rounded-md p-3 border border-gray-200 z-50"
               >
                 <div className="flex justify-between items-center mb-2">
                   <p className="font-semibold text-gray-800">Notifications</p>
