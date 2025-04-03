@@ -3,17 +3,21 @@ import { Navigate } from "react-router-dom";
 import { UserData } from "../context/UserContext";
 
 const PrivateRoute = ({ children, allowedRoles }) => {
-  const { isAuth, user } = UserData();
+  const { isAuth, user, loading } = UserData();
 
-  if (!isAuth) {
-    return <Navigate to="/login" />; // Redirect to login if not authenticated
+  if (loading) {
+    return <div>Loading...</div>; // Prevent redirect while loading
+  }
+
+  if (!isAuth || !user) {
+    return <Navigate to="/login" />;
   }
 
   if (!allowedRoles.includes(user?.role)) {
-    return <Navigate to="/" />; // Redirect to home if role is not allowed
+    return <Navigate to="/" />;
   }
 
-  return children; // Render the children components if authenticated and role is allowed
+  return children;
 };
 
 export default PrivateRoute;

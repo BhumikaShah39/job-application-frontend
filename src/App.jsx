@@ -26,6 +26,7 @@ import AdminLayout from "./Components/layouts/AdminLayout";
 import PrivateRoute from "./Components/PrivateRoute";
 import { UserData } from "./context/UserContext";
 import MyApplications from "./pages/freelancer/MyApplications";
+import ScheduledMeetings from "./pages/ScheduledMeetings";
 
 import { NotificationProvider } from "./context/NotificationContext";
 
@@ -94,6 +95,16 @@ function App() {
                   <PrivateRoute allowedRoles={["user"]}>
                     <FreelancerLayout>
                       <MyApplications />
+                    </FreelancerLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/user/:id/scheduled-meetings"
+                element={
+                  <PrivateRoute allowedRoles={["user"]}>
+                    <FreelancerLayout>
+                      <ScheduledMeetings />
                     </FreelancerLayout>
                   </PrivateRoute>
                 }
@@ -167,6 +178,17 @@ function App() {
                   <PrivateRoute allowedRoles={["hirer"]}>
                     <HirerLayout>
                       <Projects />
+                    </HirerLayout>
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/hirer/:id/scheduled-meetings"
+                element={
+                  <PrivateRoute allowedRoles={["hirer"]}>
+                    <HirerLayout>
+                      <ScheduledMeetings />
                     </HirerLayout>
                   </PrivateRoute>
                 }

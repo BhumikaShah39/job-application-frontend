@@ -85,6 +85,7 @@ const CompleteProfileForm = () => {
   // Handle category selection
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
+    setShowFilters(false);
   };
 
   // Handle subcategory selection
