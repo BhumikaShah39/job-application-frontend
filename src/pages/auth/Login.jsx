@@ -12,6 +12,7 @@ const Login = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    console.log("Form submitted with email:", email, "and password:", password);
 
     // 1) Check if email is empty
     if (!email.trim()) {
@@ -25,8 +26,14 @@ const Login = () => {
       return;
     }
 
-    // 3) If both fields have values, proceed
-    await login(email, password, navigate);
+    try {
+      console.log("Calling login function...");
+      await login(email, password, navigate);
+      console.log("Login function completed, navigation should have occurred.");
+    } catch (error) {
+      console.error("Error in submitHandler:", error);
+      toast.error("An unexpected error occurred during login.");
+    }
   };
 
   return (
@@ -55,6 +62,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+              placeholder="Enter your email"
             />
           </div>
 
@@ -74,6 +82,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-2 w-full rounded-lg border border-[#E8EEF1] px-3 py-2 text-sm text-[#2E4053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+              placeholder="Enter your password"
             />
           </div>
 

@@ -98,6 +98,17 @@ const CompleteProfileForm = () => {
     }
   };
 
+  // Prevent Enter key from submitting the form in any input
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // Stop form submission
+      if (e.target.name === "newSkill" && newSkill.trim() !== "") {
+        setSkills([...skills, newSkill.trim()]);
+        setNewSkill("");
+      }
+    }
+  };
+
   // Submit profile completion data
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -112,6 +123,12 @@ const CompleteProfileForm = () => {
     formData.append("experience", JSON.stringify(experience)); // Convert experience to JSON string
 
     const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error("You are not logged in. Please log in again.");
+      window.location.href = "/login";
+      return;
+    }
 
     try {
       const response = await axios.put(
@@ -130,8 +147,20 @@ const CompleteProfileForm = () => {
         window.location.href = `/user/${response.data.user._id}`; // Redirect to the user's dashboard
       }
     } catch (error) {
-      console.error("Error completing profile:", error);
-      toast.error("Failed to complete profile. Please try again.");
+      console.error("Error completing profile:", error.response?.data || error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to complete profile. Please try again.";
+      toast.error(errorMessage);
+      // Only log out if explicitly a token issue (e.g., "Token expired" or similar)
+      if (
+        error.response?.status === 401 &&
+        error.response?.data?.message?.toLowerCase().includes("token")
+      ) {
+        localStorage.removeItem("token");
+        toast.error("Session expired. Please log in again.");
+        window.location.href = "/login";
+      }
     }
   };
 
@@ -242,6 +271,7 @@ const CompleteProfileForm = () => {
                 newEdu[index] = e.target.value;
                 setEducation(newEdu);
               }}
+              onKeyPress={handleKeyPress} // Prevent Enter submission
               className="flex-grow border rounded-lg p-2"
               placeholder="Enter your education"
             />
@@ -273,8 +303,10 @@ const CompleteProfileForm = () => {
         <div className="flex items-center space-x-2">
           <input
             type="text"
+            name="newSkill" // Add name for identification in handleKeyPress
             value={newSkill}
             onChange={(e) => setNewSkill(e.target.value)}
+            onKeyPress={handleKeyPress} // Add skill on Enter
             className="flex-grow border rounded-lg p-2"
             placeholder="Enter a skill"
           />
@@ -286,7 +318,7 @@ const CompleteProfileForm = () => {
                 setNewSkill("");
               }
             }}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-4 py-2 bg-[#58A6FF] text-white rounded hover:bg-[#1A2E46]"
           >
             Add Skill
           </button>
@@ -314,6 +346,7 @@ const CompleteProfileForm = () => {
           type="url"
           value={linkedin}
           onChange={(e) => setLinkedin(e.target.value)}
+          onKeyPress={handleKeyPress} // Prevent Enter submission
           className="w-full border rounded-lg p-2"
           placeholder="Enter your LinkedIn profile URL"
         />
@@ -326,6 +359,7 @@ const CompleteProfileForm = () => {
           type="url"
           value={github}
           onChange={(e) => setGithub(e.target.value)}
+          onKeyPress={handleKeyPress} // Prevent Enter submission
           className="w-full border rounded-lg p-2"
           placeholder="Enter your GitHub profile URL"
         />
@@ -344,6 +378,7 @@ const CompleteProfileForm = () => {
                 newExp[index] = e.target.value;
                 setExperience(newExp);
               }}
+              onKeyPress={handleKeyPress} // Prevent Enter submission
               className="flex-grow border rounded-lg p-2"
               placeholder="Enter your experience"
             />
@@ -372,7 +407,7 @@ const CompleteProfileForm = () => {
       {/* Submit */}
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+        className="w-full bg-[#58A6FF] text-white py-2 rounded-lg hover:bg-[#1A2E46]"
       >
         Save Profile
       </button>

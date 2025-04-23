@@ -1,34 +1,106 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
 
 const job_application_backend = "http://localhost:5000";
 
 const UserContext = createContext();
 
 export const UserContextProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Start with null
-
+  const [user, setUser] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const refreshUser = async (token) => {
+    if (!token) {
+      console.warn("No token found in localStorage.");
+      setUser(null);
+      setIsAuth(false);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Decode the token to check expiration
+      const decoded = jwtDecode(token);
+      console.log("Decoded token:", decoded);
+      const currentTime = Date.now() / 1000;
+      if (decoded.exp < currentTime) {
+        console.log("Token expired, logging out");
+        localStorage.removeItem("token");
+        setUser(null);
+        setIsAuth(false);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch user data from the backend
+      console.log("Fetching current user data with token:", token);
+      const { data } = await axios.get(
+        `${job_application_backend}/api/users/current`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("Current user response:", data);
+
+      if (data?.user) {
+        setUser(data.user);
+        setIsAuth(true);
+      } else {
+        console.error("User data is undefined in API response.");
+        setUser(null);
+        setIsAuth(false);
+        localStorage.removeItem("token");
+      }
+    } catch (error) {
+      console.error(
+        "Error refreshing user data:",
+        error.response?.data || error.message
+      );
+      setUser(null);
+      setIsAuth(false);
+      localStorage.removeItem("token");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   async function login(email, password, navigate) {
     setBtnLoading(true);
     try {
+      console.log("Attempting login with email:", email);
       const { data } = await axios.post(
         `${job_application_backend}/api/auth/login`,
-        {
-          email,
-          password,
-        }
+        { email, password }
       );
+      console.log("Login response:", data);
 
-      localStorage.setItem("token", data.token); // Store the token
-      setUser(data.user); // Set the user data
+      if (!data.token) {
+        console.error("Token not found in login response for email:", email);
+        throw new Error("Token not found in login response");
+      }
+
+      localStorage.setItem("token", data.token);
+      console.log("Token set in localStorage:", localStorage.getItem("token"));
+      setUser(data.user);
       setIsAuth(true);
       setBtnLoading(false);
 
-      // Redirect to the user-specific dashboard based on role
+      // Call refreshUser before navigating to ensure state is updated
+      console.log("Refreshing user data before navigation...");
+      await refreshUser(data.token);
+      console.log("refreshUser completed.");
+
+      // Navigate based on user role
+      console.log(
+        "Navigating for role:",
+        data.user.role,
+        "to:",
+        `/user/${data.user._id}`
+      );
       if (data.user.role === "admin") {
         navigate(`/admin/${data.user._id}`);
       } else if (data.user.role === "hirer") {
@@ -36,10 +108,11 @@ export const UserContextProvider = ({ children }) => {
       } else if (data.user.role === "user") {
         navigate(`/user/${data.user._id}`);
       } else {
-        navigate("/"); // Default fallback
+        navigate("/");
       }
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
+      console.error("Full error:", error);
       toast.error(error.response?.data?.message || "Login failed");
       setBtnLoading(false);
     }
@@ -48,7 +121,6 @@ export const UserContextProvider = ({ children }) => {
   async function register(formData, navigate) {
     setBtnLoading(true);
     try {
-      // no registration attempts for admin role
       if (formData.role === "admin") {
         toast.error("Cannot register as admin.");
         setBtnLoading(false);
@@ -58,14 +130,19 @@ export const UserContextProvider = ({ children }) => {
         `${job_application_backend}/api/auth/register`,
         formData
       );
+      console.log("Register response:", data);
       toast.success(data.message);
       setBtnLoading(false);
 
-      // auto-login after registration
       if (data.token) {
-        localStorage.setItem("token", data.token); // Store the token
-        setUser(data.user); // Set the user data
+        localStorage.setItem("token", data.token);
+        console.log(
+          "Token set in localStorage:",
+          localStorage.getItem("token")
+        );
+        setUser(data.user);
         setIsAuth(true);
+        await refreshUser(data.token);
         navigate("/");
       } else {
         navigate("/login");
@@ -80,47 +157,32 @@ export const UserContextProvider = ({ children }) => {
     }
   }
 
-  // Logout Function
   const logout = (navigate) => {
     localStorage.removeItem("token");
     setUser(null);
     setIsAuth(false);
-    navigate("/login"); // Redirect to login
+    setLoading(false); // Ensure loading state is reset on logout
+    navigate("/login");
   };
 
-  const refreshUser = async () => {
+  useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      console.warn("No token found in localStorage.");
-      return;
-    }
-    try {
-      const { data } = await axios.get(
-        `${job_application_backend}/api/users/current`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (data?.user) {
-        console.log("Fetched user data in refreshUser:", data.user);
-        setUser(data.user);
-        setIsAuth(true);
-      } else {
-        console.error("User data is undefined in API response.");
-      }
-    } catch (error) {
-      console.error("Error refreshing user data:", error);
-      setUser(null);
-      setIsAuth(false);
-    }
-  };
+    console.log("Initial token check on mount:", token);
+    refreshUser(token);
+
+    const handleStorageChange = () => {
+      const newToken = localStorage.getItem("token");
+      console.log("Storage changed, new token:", newToken);
+      refreshUser(newToken);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   useEffect(() => {
     console.log("Updated user data:", user);
   }, [user]);
-
-  useEffect(() => {
-    refreshUser();
-  }, []);
 
   return (
     <UserContext.Provider
@@ -133,6 +195,8 @@ export const UserContextProvider = ({ children }) => {
         register,
         btnLoading,
         refreshUser,
+        logout,
+        loading,
       }}
     >
       {children}

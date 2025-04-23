@@ -48,7 +48,10 @@ export const NotificationProvider = ({ children }) => {
     socket.on("newApplication", (data) => {
       setNotifications((prev) => [data, ...prev]);
     });
-    return () => socket.disconnect();
+    return () => {
+      socket.off("newApplication");
+      socket.disconnect();
+    };
   }, []);
 
   return (

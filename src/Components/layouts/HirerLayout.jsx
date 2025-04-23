@@ -1,12 +1,20 @@
-// HirerLayout.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { UserData } from "../../context/UserContext";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { FaBell } from "react-icons/fa";
+import {
+  FaBell,
+  FaHome,
+  FaPlus,
+  FaUsers,
+  FaBell as FaBellIcon,
+  FaFolder,
+  FaCalendar,
+  FaEnvelope,
+  FaInfoCircle,
+} from "react-icons/fa";
 import { useNotifications } from "../../context/NotificationContext";
 import axios from "axios";
-
 import KaryaLogo from "../../assets/LogoWithText.png";
 
 const HirerLayout = ({ children }) => {
@@ -15,8 +23,10 @@ const HirerLayout = ({ children }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
   const notificationRef = useRef(null);
   const profileRef = useRef(null);
+  const [isApplicationsOpen, setIsApplicationsOpen] = useState(false);
 
   useEffect(() => {
     fetchNotifications();
@@ -40,7 +50,7 @@ const HirerLayout = ({ children }) => {
             `http://localhost:5000/api/notifications/${notif._id}/read`,
             {},
             {
-              headers: { Authorization: `Bearer ${token}` }, // Include auth header
+              headers: { Authorization: `Bearer ${token}` },
             }
           )
         )
@@ -61,6 +71,7 @@ const HirerLayout = ({ children }) => {
       markAllAsRead();
     }
   };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
@@ -75,6 +86,10 @@ const HirerLayout = ({ children }) => {
 
   const toggleProfileDropdown = () => {
     setIsProfileOpen((prev) => !prev);
+  };
+
+  const toggleApplicationsMenu = () => {
+    setIsApplicationsOpen((prev) => !prev);
   };
 
   useEffect(() => {
@@ -97,6 +112,16 @@ const HirerLayout = ({ children }) => {
 
   const userInitial = user?.firstName?.charAt(0)?.toUpperCase() || "H";
 
+  // Determine if a link is active
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
+  // Determine if View Applications or its submenu is active
+  const isViewApplicationsActive =
+    isActive(`/hirer/${user?._id}/applications`) ||
+    isActive(`/hirer/${user?._id}/applications/accepted`);
+
   return (
     <div className="flex h-screen bg-gray-100">
       <aside
@@ -104,7 +129,7 @@ const HirerLayout = ({ children }) => {
           fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-md
           transform transition-transform duration-200 ease-in-out
           ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0 md:static
+          md:translate-x-0 md:static flex flex-col
         `}
       >
         <div className="flex items-center justify-between p-4 border-b bg-[#FDFEFE]">
@@ -119,50 +144,143 @@ const HirerLayout = ({ children }) => {
           </button>
         </div>
 
-        <nav className="flex-1 p-4 overflow-auto">
-          <ul className="space-y-4">
+        <nav className="flex-1 px-0 py-4 overflow-auto">
+          <ul className="space-y-2">
+            <li>
+              <Link
+                to={`/hirer/${user?._id}`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/hirer/${user?._id}`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaHome className="w-5 h-5 text-[#58A6FF]" />
+                <span>Home</span>
+              </Link>
+            </li>
             <li>
               <Link
                 to={`/hirer/${user?._id}/add-jobs`}
-                className="block text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/hirer/${user?._id}/add-jobs`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
               >
-                Add Jobs
+                <FaPlus className="w-5 h-5 text-[#58A6FF]" />
+                <span>Add Jobs</span>
               </Link>
             </li>
             <li>
-              <Link
-                to={`/hirer/${user?._id}/applications`}
-                className="block text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
+              <button
+                onClick={toggleApplicationsMenu}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium w-full text-left ${
+                  isViewApplicationsActive
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
               >
-                View Applications
-              </Link>
-            </li>
-            <li>
-              <Link
-                to={`/hirer/${user?._id}/analytics`}
-                className="block text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
-              >
-                Analytics
-              </Link>
+                <FaUsers className="w-5 h-5 text-[#58A6FF]" />
+                <span>View Applications</span>
+              </button>
+              {isApplicationsOpen && (
+                <ul className="pl-8 mt-1 space-y-1">
+                  <li>
+                    <Link
+                      to={`/hirer/${user?._id}/applications`}
+                      className={`block py-2 px-4 text-sm font-medium ${
+                        isActive(`/hirer/${user?._id}/applications`)
+                          ? "text-[#58A6FF] font-bold"
+                          : "text-gray-500 hover:text-[#58A6FF]"
+                      }`}
+                    >
+                      All Applications
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to={`/hirer/${user?._id}/applications/accepted`}
+                      className={`block py-2 px-4 text-sm font-medium ${
+                        isActive(`/hirer/${user?._id}/applications/accepted`)
+                          ? "text-[#58A6FF] font-bold"
+                          : "text-gray-500 hover:text-[#58A6FF]"
+                      }`}
+                    >
+                      Accepted Applications
+                    </Link>
+                  </li>
+                </ul>
+              )}
             </li>
             <li>
               <Link
                 to={`/hirer/${user?._id}/notifications`}
-                className="block text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/hirer/${user?._id}/notifications`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
               >
-                Notifications
+                <FaBellIcon className="w-5 h-5 text-[#58A6FF]" />
+                <span>Notifications</span>
               </Link>
             </li>
             <li>
               <Link
                 to={`/hirer/${user?._id}/projects`}
-                className="block text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/hirer/${user?._id}/projects`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
               >
-                Projects
+                <FaFolder className="w-5 h-5 text-[#58A6FF]" />
+                <span>Projects</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={`/hirer/${user?._id}/scheduled-meetings`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/hirer/${user?._id}/scheduled-meetings`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaCalendar className="w-5 h-5 text-[#58A6FF]" />
+                <span>Scheduled Meetings</span>
               </Link>
             </li>
           </ul>
         </nav>
+
+        {/* Documentation Section with Contact Us and About Links */}
+        <div className="p-4 border-t mt-auto">
+          <p className="text-xs font-medium text-gray-500 uppercase mb-2">
+            Documentation
+          </p>
+          <ul className="space-y-2">
+            <li>
+              <Link
+                to="/contact-us"
+                className="flex items-center space-x-2 py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700"
+              >
+                <FaEnvelope className="w-5 h-5 text-gray-500" />
+                <span>Contact Us</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/about"
+                className="flex items-center space-x-2 py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700"
+              >
+                <FaInfoCircle className="w-5 h-5 text-gray-500" />
+                <span>About</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
       </aside>
 
       {isMobileMenuOpen && (
@@ -181,7 +299,9 @@ const HirerLayout = ({ children }) => {
           </div>
 
           <div className="hidden md:block text-xl text-[#1A2E46] font-bold ml-2">
-            Hirer Dashboard
+            {user?.role === "freelancer"
+              ? "Freelancer Dashboard"
+              : "Hirer Dashboard"}
           </div>
 
           <div className="flex items-center space-x-4 relative">

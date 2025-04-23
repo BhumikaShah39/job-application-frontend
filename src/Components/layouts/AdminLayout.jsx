@@ -1,4 +1,3 @@
-// AdminLayout.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserData } from "../../context/UserContext";
@@ -77,18 +76,18 @@ const AdminLayout = ({ children }) => {
           <ul className="space-y-4">
             <li>
               <Link
-                to="/admin/manage-members"
+                to="/admin/dashboard"
                 className="block text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
               >
-                Manage Members
+                Dashboard
               </Link>
             </li>
             <li>
               <Link
-                to="/admin/activity"
+                to="/admin/manage-members"
                 className="block text-sm font-medium text-[#1A2E46] hover:text-[#58A6FF]"
               >
-                Activity
+                Manage Members
               </Link>
             </li>
             <li>
