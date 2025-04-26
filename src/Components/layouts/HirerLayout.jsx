@@ -1,3 +1,4 @@
+// job-application-frontend/src/Components/layouts/HirerLayout.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { UserData } from "../../context/UserContext";
@@ -112,12 +113,10 @@ const HirerLayout = ({ children }) => {
 
   const userInitial = user?.firstName?.charAt(0)?.toUpperCase() || "H";
 
-  // Determine if a link is active
   const isActive = (path) => {
     return location.pathname === path;
   };
 
-  // Determine if View Applications or its submenu is active
   const isViewApplicationsActive =
     isActive(`/hirer/${user?._id}/applications`) ||
     isActive(`/hirer/${user?._id}/applications/accepted`);
@@ -255,7 +254,6 @@ const HirerLayout = ({ children }) => {
           </ul>
         </nav>
 
-        {/* Documentation Section with Contact Us and About Links */}
         <div className="p-4 border-t mt-auto">
           <p className="text-xs font-medium text-gray-500 uppercase mb-2">
             Documentation
@@ -369,11 +367,18 @@ const HirerLayout = ({ children }) => {
               {isProfileOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-md z-50">
                   <Link
-                    to={`/hirer/${user?._id}/profile`}
+                    to={`/hirer/${user?._id}/edit-account`}
                     onClick={() => setIsProfileOpen(false)}
                     className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-gray-100"
                   >
-                    View Profile
+                    Edit Account
+                  </Link>
+                  <Link
+                    to={`/hirer/${user?._id}/edit-profile`}
+                    onClick={() => setIsProfileOpen(false)}
+                    className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-gray-100"
+                  >
+                    Edit Profile
                   </Link>
                   <button
                     onClick={handleLogout}
