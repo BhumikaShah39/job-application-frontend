@@ -1,7 +1,8 @@
+// job-application-frontend/src/pages/freelancer/Freelancer_dashboard.jsx
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { UserData } from "../../context/UserContext";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import ProfileCompletionPopup from "./ProfileCompletionPopup";
 import DefaultProfileImage from "../../assets/DefaultProfileImage.avif";
 import JobApplicationForm from "./JobApplicationForm";
@@ -46,6 +47,8 @@ const FreelancerDashboard = () => {
   const [errorRecommended, setErrorRecommended] = useState(null);
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [hasFetchedJobs, setHasFetchedJobs] = useState(false);
+  const [showHirerModal, setShowHirerModal] = useState(false);
+  const [selectedHirer, setSelectedHirer] = useState(null);
 
   useEffect(() => {
     if (user && !user.isProfileComplete) {
@@ -318,6 +321,16 @@ const FreelancerDashboard = () => {
     setShowHistory(false);
   };
 
+  const handleViewHirer = (hirer) => {
+    setSelectedHirer(hirer);
+    setShowHirerModal(true);
+  };
+
+  const closeHirerModal = () => {
+    setShowHirerModal(false);
+    setSelectedHirer(null);
+  };
+
   return (
     <div>
       {showPopup && (
@@ -470,60 +483,79 @@ const FreelancerDashboard = () => {
                 return (
                   <div
                     key={job._id}
-                    className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition flex flex-col"
+                    className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition flex flex-col md:flex-row"
                   >
-                    <div className="flex flex-col md:flex-row justify-between">
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-700">
-                          {job.title}
-                        </h3>
-                        <p className="text-sm text-gray-500">{job.company}</p>
-                        <p className="text-sm text-gray-500">
-                          {job.workplaceType}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Location: {job.location}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Job Type: {job.jobType}
-                        </p>
+                    <div className="flex items-center mr-4 mb-4 md:mb-0">
+                      <img
+                        src={
+                          job.hirer?.profilePicture
+                            ? `http://localhost:5000/${job.hirer.profilePicture}`
+                            : DefaultProfileImage
+                        }
+                        alt="Hirer Profile"
+                        className="w-16 h-16 rounded-full cursor-pointer"
+                        onClick={() => handleViewHirer(job.hirer)}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-700">
+                        {job.title}
+                      </h3>
+                      <p className="text-sm text-gray-500">{job.company}</p>
+                      <p className="text-sm text-gray-500">
+                        Posted by: {job.hirer?.firstName} {job.hirer?.lastName}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {job.workplaceType}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Location: {job.location}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Job Type: {job.jobType}
+                      </p>
 
-                        <div className="flex space-x-2 mt-2">
-                          <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
-                            Category: {job.category}
-                          </p>
-                          <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
-                            Subcategory: {job.subCategory}
-                          </p>
-                        </div>
-
-                        <p className="mt-2 text-gray-600">{job.description}</p>
+                      <div className="flex space-x-2 mt-2">
+                        <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
+                          Category: {job.category}
+                        </p>
+                        <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
+                          Subcategory: {job.subCategory}
+                        </p>
                       </div>
 
-                      <div className="flex flex-col items-end space-y-3 mt-4 md:mt-0">
-                        <button
-                          onClick={() => handleSaveJob(job._id, isSaved)}
-                          className={`p-2 rounded-full transition-transform transform hover:scale-110 ${
-                            isSaved
-                              ? "bg-blue-500 text-white"
-                              : "bg-gray-300 text-gray-700"
-                          }`}
-                          title={isSaved ? "Unsave Job" : "Save Job"}
-                        >
-                          {isSaved ? (
-                            <FaBookmark size={20} />
-                          ) : (
-                            <FaRegBookmark size={20} />
-                          )}
-                        </button>
+                      <p className="mt-2 text-gray-600">{job.description}</p>
+                      <p className="mt-2 text-gray-600">
+                        Rating:{" "}
+                        {job.hirer?.ratings?.length > 0
+                          ? "Rated"
+                          : "Not rated yet"}
+                      </p>
+                    </div>
 
-                        <button
-                          onClick={() => handleApply(job._id)}
-                          className="px-3 py-1 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] transition text-sm font-medium"
-                        >
-                          Apply Now
-                        </button>
-                      </div>
+                    <div className="flex flex-col items-end space-y-3 mt-4 md:mt-0">
+                      <button
+                        onClick={() => handleSaveJob(job._id, isSaved)}
+                        className={`p-2 rounded-full transition-transform transform hover:scale-110 ${
+                          isSaved
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-300 text-gray-700"
+                        }`}
+                        title={isSaved ? "Unsave Job" : "Save Job"}
+                      >
+                        {isSaved ? (
+                          <FaBookmark size={20} />
+                        ) : (
+                          <FaRegBookmark size={20} />
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => handleApply(job._id)}
+                        className="px-3 py-1 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] transition text-sm font-medium"
+                      >
+                        Apply Now
+                      </button>
                     </div>
                   </div>
                 );
@@ -565,12 +597,107 @@ const FreelancerDashboard = () => {
                 ))}
               </div>
             </div>
-            <button className="mt-4 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">
-              Edit Profile
-            </button>
+            <div className="mt-4 space-y-2">
+              <Link
+                to={`/user/${user?._id}/edit-account`}
+                className="block px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+              >
+                Edit Account
+              </Link>
+              <Link
+                to={`/user/${user?._id}/add-enhancements`}
+                className="block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Add Enhancements
+              </Link>
+            </div>
           </div>
         </aside>
       </div>
+
+      {/* Hirer Details Modal */}
+      {showHirerModal && selectedHirer && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={closeHirerModal}
+        >
+          <div
+            className="bg-white rounded-lg p-6 shadow-lg w-1/2 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeHirerModal}
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              aria-label="Close modal"
+            >
+              ×
+            </button>
+            <h2 className="text-lg font-bold mb-4">Hirer Profile</h2>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <img
+                  src={
+                    selectedHirer.profilePicture
+                      ? `http://localhost:5000/${selectedHirer.profilePicture}`
+                      : DefaultProfileImage
+                  }
+                  alt="Hirer Profile"
+                  className="w-24 h-24 rounded-full mr-4"
+                />
+                <div>
+                  <h3 className="text-xl font-semibold">
+                    {selectedHirer.firstName} {selectedHirer.lastName}
+                  </h3>
+                  <p className="text-gray-600">{selectedHirer.email}</p>
+                </div>
+              </div>
+              {selectedHirer.businessDetails && (
+                <div>
+                  <h4 className="font-semibold">Business Details</h4>
+                  <p>Company: {selectedHirer.businessDetails.companyName}</p>
+                  <p>Industry: {selectedHirer.businessDetails.industry}</p>
+                  <p>
+                    Description: {selectedHirer.businessDetails.description}
+                  </p>
+                  {selectedHirer.businessDetails.website && (
+                    <p>
+                      Website:{" "}
+                      <a
+                        href={selectedHirer.businessDetails.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        {selectedHirer.businessDetails.website}
+                      </a>
+                    </p>
+                  )}
+                </div>
+              )}
+              {selectedHirer.pastWork?.length > 0 && (
+                <div>
+                  <h4 className="font-semibold">Past Work</h4>
+                  {selectedHirer.pastWork.map((work, index) => (
+                    <div key={index} className="mb-2">
+                      <p>{work.title}</p>
+                      <p>{work.description}</p>
+                      <p>Duration: {work.duration}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div>
+                <h4 className="font-semibold">Rating</h4>
+                <p>
+                  {selectedHirer.ratings?.length > 0
+                    ? "Rated (rating system to be implemented)"
+                    : "Not rated yet"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
