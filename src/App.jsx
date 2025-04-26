@@ -1,3 +1,4 @@
+// job-application-frontend/src/App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
@@ -29,9 +30,12 @@ import RoleBasedLayout from "./Components/layouts/RoleBasedLayout";
 import PrivateRoute from "./Components/PrivateRoute";
 import { UserContextProvider, UserData } from "./context/UserContext";
 import MyApplications from "./pages/freelancer/MyApplications";
-import FreelancerAnalytics from "./pages/freelancer/FreelancerAnalytics"; // New import
+import FreelancerAnalytics from "./pages/freelancer/FreelancerAnalytics";
 import ScheduledMeetings from "./pages/ScheduledMeetings";
 import { NotificationProvider } from "./context/NotificationContext";
+import EditAccount from "./pages/EditAccount";
+import EditHirerProfile from "./pages/hirer/EditHirerProfile";
+import AddEnhancements from "./pages/freelancer/AddEnhancements";
 
 const stripePromise = loadStripe(
   "pk_test_51RBwkS4ERPs70rNrlWi7xFEyIitr8ANpsVWPYfXQ0Urav38HLPKKf8Jcj6kbcgOJpnDvHl0476MH4BRpkP3nqQoh00ImNwgLuB"
@@ -87,6 +91,26 @@ function App() {
                       <PrivateRoute allowedRoles={["user"]}>
                         <FreelancerLayout>
                           <FreelancerDashboard />
+                        </FreelancerLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/user/:id/edit-account"
+                    element={
+                      <PrivateRoute allowedRoles={["user"]}>
+                        <FreelancerLayout>
+                          <EditAccount />
+                        </FreelancerLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/user/:id/add-enhancements"
+                    element={
+                      <PrivateRoute allowedRoles={["user"]}>
+                        <FreelancerLayout>
+                          <AddEnhancements />
                         </FreelancerLayout>
                       </PrivateRoute>
                     }
@@ -149,6 +173,26 @@ function App() {
                       <PrivateRoute allowedRoles={["hirer"]}>
                         <HirerLayout>
                           <HirerDashboard />
+                        </HirerLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/hirer/:id/edit-account"
+                    element={
+                      <PrivateRoute allowedRoles={["hirer"]}>
+                        <HirerLayout>
+                          <EditAccount />
+                        </HirerLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/hirer/:id/edit-profile"
+                    element={
+                      <PrivateRoute allowedRoles={["hirer"]}>
+                        <HirerLayout>
+                          <EditHirerProfile />
                         </HirerLayout>
                       </PrivateRoute>
                     }
