@@ -1,30 +1,58 @@
+// job-application-frontend/src/pages/hirer/Applications.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { UserData } from "../../context/UserContext";
 import io from "socket.io-client";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import DefaultProfileImage from "../../assets/DefaultProfileImage.avif";
 
-const socket = io("http://localhost:5000");
+// Initialize Socket.IO client with explicit WebSocket transport and reconnection settings
+const socket = io("http://localhost:5000", {
+  transports: ["websocket"], // Force WebSocket transport
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+});
+
+// Add error handling for Socket.IO connection
+socket.on("connect_error", (error) => {
+  console.error("Socket.IO connection error:", error);
+  toast.error(
+    "Failed to connect to notification server. Real-time updates may not work."
+  );
+});
+
+socket.on("connect", () => {
+  console.log("Socket.IO connected:", socket.id);
+});
+
+socket.on("disconnect", () => {
+  console.log("Socket.IO disconnected");
+});
 
 const Applications = () => {
-  const { user } = UserData();
+  const { user, refreshUser } = UserData();
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
   const [scheduledTime, setScheduledTime] = useState(() => {
-    // Set default value to current date and time in the correct format for datetime-local
     const now = new Date();
-    return now.toISOString().slice(0, 16); // Format: YYYY-MM-DDThh:mm
+    return now.toISOString().slice(0, 16);
   });
   const [scheduling, setScheduling] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedFreelancer, setSelectedFreelancer] = useState(null);
 
   useEffect(() => {
     const fetchApplications = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No token found");
+        }
         const response = await axios.get(
           "http://localhost:5000/api/applications/hirer",
           {
@@ -33,16 +61,45 @@ const Applications = () => {
             },
           }
         );
+        console.log("Fetched applications:", response.data);
         setApplications(response.data);
         setLoading(false);
       } catch (error) {
         console.log("Error fetching applications:", error);
         setLoading(false);
+        if (
+          error.message === "No token found" ||
+          error.response?.status === 401
+        ) {
+          toast.error("Session expired. Please log in again.");
+          navigate("/login");
+        }
       }
     };
 
     fetchApplications();
-  }, []);
+
+    // Ensure user data is refreshed after account details change
+    const token = localStorage.getItem("token");
+    if (token && !user) {
+      refreshUser(token);
+    }
+
+    // Join the hirer's room based on their user ID, only if user._id is available
+    if (user?._id) {
+      console.log("Joining hirer's room:", user._id);
+      socket.emit("join", user._id);
+    } else {
+      console.warn("User ID not available yet for Socket.IO join");
+    }
+
+    // Cleanup on unmount
+    return () => {
+      socket.off("connect_error");
+      socket.off("connect");
+      socket.off("disconnect");
+    };
+  }, [user, refreshUser, navigate]);
 
   const handleAcceptApplication = async (applicationId) => {
     try {
@@ -84,7 +141,6 @@ const Applications = () => {
   };
 
   const handleScheduleInterview = async () => {
-    // Validate scheduledTime
     if (!scheduledTime) {
       toast.error("Please select a date and time for the interview.");
       return;
@@ -104,7 +160,7 @@ const Applications = () => {
       toast.success(response.data.message);
       if (response.data.meetLink) {
         toast.success(`Google Meet Link: ${response.data.meetLink}`, {
-          duration: 10000, // Show the link for 10 seconds
+          duration: 10000,
         });
       }
       setShowScheduleModal(false);
@@ -118,7 +174,6 @@ const Applications = () => {
       const errorMessage =
         error.response?.data?.message || "Failed to schedule interview";
       toast.error(errorMessage);
-      // Close the modal if the error is related to email validation or Google authentication
       if (
         errorMessage.includes("Google access expired") ||
         errorMessage.includes("Failed to refresh Google access token") ||
@@ -177,16 +232,27 @@ const Applications = () => {
     }
   };
 
-  // Add keyboard support to close modal with Escape key
+  const handleViewProfile = (freelancer) => {
+    console.log("Viewing profile for freelancer:", freelancer);
+    setSelectedFreelancer(freelancer);
+    setShowProfileModal(true);
+  };
+
+  const closeProfileModal = () => {
+    setShowProfileModal(false);
+    setSelectedFreelancer(null);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "Escape" && showScheduleModal) {
-        closeScheduleModal();
+      if (e.key === "Escape" && (showScheduleModal || showProfileModal)) {
+        if (showScheduleModal) closeScheduleModal();
+        if (showProfileModal) closeProfileModal();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showScheduleModal]);
+  }, [showScheduleModal, showProfileModal]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -206,6 +272,28 @@ const Applications = () => {
             key={app._id}
             className="bg-white shadow rounded-lg p-4 flex flex-col md:flex-row"
           >
+            <div className="flex items-center mr-4 mb-4 md:mb-0">
+              <img
+                src={
+                  app.userId?.profilePicture
+                    ? `http://localhost:5000/${app.userId.profilePicture.replace(
+                        /\\/g,
+                        "/"
+                      )}`
+                    : DefaultProfileImage
+                }
+                alt="Profile"
+                className="w-16 h-16 rounded-full cursor-pointer"
+                onClick={() => handleViewProfile(app.userId)}
+                onError={(e) => {
+                  console.error(
+                    "Error loading profile picture:",
+                    app.userId?.profilePicture
+                  );
+                  e.target.src = DefaultProfileImage;
+                }}
+              />
+            </div>
             <div className="flex-1 mr-4 mb-4 md:mb-0">
               <h2 className="font-semibold text-lg mb-1">
                 {app.userId
@@ -268,7 +356,6 @@ const Applications = () => {
               )}
             </div>
             <div className="flex flex-col items-center md:items-start space-y-3">
-              {/* Accept and Reject Buttons */}
               <div className="flex space-x-3">
                 <button
                   onClick={() => handleAcceptApplication(app._id)}
@@ -286,7 +373,6 @@ const Applications = () => {
                 </button>
               </div>
 
-              {/* Download Resume Button */}
               {app.resume ? (
                 <a
                   href={`http://localhost:5000/${app.resume}`}
@@ -329,7 +415,7 @@ const Applications = () => {
         >
           <div
             className="bg-white rounded-lg p-6 shadow-lg w-1/3 relative"
-            onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={closeScheduleModal}
@@ -372,6 +458,201 @@ const Applications = () => {
           </div>
         </div>
       )}
+
+      {showProfileModal && selectedFreelancer && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={closeProfileModal}
+        >
+          <div
+            className="bg-white rounded-lg p-6 shadow-lg w-1/2 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeProfileModal}
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              aria-label="Close modal"
+            >
+              ×
+            </button>
+            <h2 className="text-lg font-bold mb-4">Freelancer Profile</h2>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <img
+                  src={
+                    selectedFreelancer.profilePicture
+                      ? `http://localhost:5000/${selectedFreelancer.profilePicture.replace(
+                          /\\/g,
+                          "/"
+                        )}`
+                      : DefaultProfileImage
+                  }
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full mr-4"
+                  onError={(e) => {
+                    console.error(
+                      "Error loading profile picture in modal:",
+                      selectedFreelancer.profilePicture
+                    );
+                    e.target.src = DefaultProfileImage;
+                  }}
+                />
+                <div>
+                  <h3 className="text-xl font-semibold">
+                    {selectedFreelancer.firstName} {selectedFreelancer.lastName}
+                  </h3>
+                  <p className="text-gray-600">{selectedFreelancer.email}</p>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold">Skills</h4>
+                <p>{selectedFreelancer.skills.join(", ")}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold">Education</h4>
+                <p>{selectedFreelancer.education.join(", ")}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold">Experience</h4>
+                <p>{selectedFreelancer.experience?.join(", ") || "N/A"}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold">Links</h4>
+                {selectedFreelancer.github && (
+                  <p>
+                    GitHub:{" "}
+                    <a
+                      href={selectedFreelancer.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {selectedFreelancer.github}
+                    </a>
+                  </p>
+                )}
+                {selectedFreelancer.linkedin && (
+                  <p>
+                    LinkedIn:{" "}
+                    <a
+                      href={selectedFreelancer.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {selectedFreelancer.linkedin}
+                    </a>
+                  </p>
+                )}
+              </div>
+              <div>
+                <h4 className="font-semibold">Certifications</h4>
+                {selectedFreelancer.enhancements
+                  ?.filter((e) => e.type === "certification")
+                  .map((cert, index) => (
+                    <div key={index} className="mb-2">
+                      <p>
+                        {cert.details.name} - {cert.details.issuer}
+                      </p>
+                      <p>
+                        Issued:{" "}
+                        {new Date(cert.details.issueDate).toLocaleDateString()}
+                      </p>
+                      {cert.details.images &&
+                        cert.details.images.length > 0 && (
+                          <div className="flex space-x-2 mt-1">
+                            {cert.details.images.map((img, imgIndex) => (
+                              <img
+                                key={imgIndex}
+                                src={`http://localhost:5000/${img.replace(
+                                  /\\/g,
+                                  "/"
+                                )}`}
+                                alt="Certificate"
+                                className="w-20 h-20 object-cover rounded"
+                                onError={(e) => {
+                                  console.error(
+                                    "Error loading certificate image:",
+                                    img
+                                  );
+                                  e.target.style.display = "none";
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                    </div>
+                  )) || <p>No certifications available.</p>}
+              </div>
+              <div>
+                <h4 className="font-semibold">Achievements</h4>
+                {selectedFreelancer.enhancements
+                  ?.filter((e) => e.type === "achievement")
+                  .map((ach, index) => (
+                    <div key={index} className="mb-2">
+                      <p>{ach.details.name}</p>
+                      <p>{ach.details.description}</p>
+                      <p>
+                        Date:{" "}
+                        {new Date(ach.details.issueDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )) || <p>No achievements available.</p>}
+              </div>
+              <div>
+                <h4 className="font-semibold">Portfolio</h4>
+                {selectedFreelancer.enhancements
+                  ?.filter((e) => e.type === "portfolio")
+                  .map((port, index) => (
+                    <div key={index} className="mb-2">
+                      <p>{port.details.name}</p>
+                      <p>{port.details.description}</p>
+                      <p>
+                        Technologies: {port.details.technologies.join(", ")}
+                      </p>
+                      {port.details.link && (
+                        <p>
+                          <a
+                            href={port.details.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline"
+                          >
+                            View Project
+                          </a>
+                        </p>
+                      )}
+                      {port.details.images &&
+                        port.details.images.length > 0 && (
+                          <div className="flex space-x-2 mt-1">
+                            {port.details.images.map((img, imgIndex) => (
+                              <img
+                                key={imgIndex}
+                                src={`http://localhost:5000/${img.replace(
+                                  /\\/g,
+                                  "/"
+                                )}`}
+                                alt="Portfolio"
+                                className="w-20 h-20 object-cover rounded"
+                                onError={(e) => {
+                                  console.error(
+                                    "Error loading portfolio image:",
+                                    img
+                                  );
+                                  e.target.style.display = "none";
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                    </div>
+                  )) || <p>No portfolio items available.</p>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {scheduling && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow text-center">
