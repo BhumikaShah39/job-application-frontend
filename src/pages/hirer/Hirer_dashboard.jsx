@@ -1,3 +1,4 @@
+// job-application-frontend/src/pages/hirer/Hirer_dashboard.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { UserData } from "../../context/UserContext";
@@ -9,13 +10,15 @@ const HirerDashboard = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [jobs, setJobs] = useState([]);
-
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteJobId, setDeleteJobId] = useState(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
-  const [scheduledTime, setScheduledTime] = useState("");
+  const [scheduledTime, setScheduledTime] = useState(() => {
+    const now = new Date();
+    return now.toISOString().slice(0, 16);
+  });
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -120,7 +123,10 @@ const HirerDashboard = () => {
       );
       toast.success(response.data.message);
       setShowScheduleModal(false);
-      setScheduledTime("");
+      setScheduledTime(() => {
+        const now = new Date();
+        return now.toISOString().slice(0, 16);
+      });
     } catch (error) {
       console.error("Error scheduling interview:", error);
       toast.error("Failed to schedule interview");
@@ -133,7 +139,10 @@ const HirerDashboard = () => {
 
   const closeScheduleModal = () => {
     setShowScheduleModal(false);
-    setScheduledTime("");
+    setScheduledTime(() => {
+      const now = new Date();
+      return now.toISOString().slice(0, 16);
+    });
   };
 
   if (contextLoading || loading) {
@@ -144,7 +153,6 @@ const HirerDashboard = () => {
     return <p>Redirecting to login...</p>;
   }
 
-  // Redirect if the URL id doesn't match the user._id
   if (id !== user._id) {
     navigate(`/hirer/${user._id}`, { replace: true });
     return null;
@@ -238,58 +246,6 @@ const HirerDashboard = () => {
           </div>
         )}
       </div>
-
-      {/* <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Applications Received</h2>
-        {applications.length > 0 ? (
-          <div className="space-y-4">
-            {applications.map((app) => (
-              <div
-                key={app._id}
-                className="flex flex-col md:flex-row items-start bg-white rounded-lg shadow-md hover:shadow-lg transition p-6 w-full"
-              >
-                <div className="flex-grow">
-                  <h3 className="text-lg font-semibold mb-2">
-                    {app.jobId.title} - {app.userId.firstName}{" "}
-                    {app.userId.lastName}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Email: {app.userId.email}
-                  </p>
-                  <p className="text-sm text-gray-500">Status: {app.status}</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Cover Letter: {app.coverLetter}
-                  </p>
-                  {app.resume && (
-                    <a
-                      href={`http://localhost:5000${app.resume}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline text-sm"
-                    >
-                      View Resume
-                    </a>
-                  )}
-                </div>
-                <div className="mt-4 md:mt-0 md:ml-6 flex space-x-4 items-center">
-                  {app.status === "Pending" && (
-                    <button
-                      onClick={() => handleAcceptApplication(app._id)}
-                      className="bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600"
-                    >
-                      Accept
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center">
-            <p className="text-gray-500">No applications received yet.</p>
-          </div>
-        )}
-      </div> */}
 
       {deleteJobId && (
         <div
