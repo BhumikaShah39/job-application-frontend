@@ -1,4 +1,3 @@
-// job-application-frontend/src/pages/freelancer/Freelancer_dashboard.jsx
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { UserData } from "../../context/UserContext";
 import axios from "axios";
@@ -47,8 +46,6 @@ const FreelancerDashboard = () => {
   const [errorRecommended, setErrorRecommended] = useState(null);
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [hasFetchedJobs, setHasFetchedJobs] = useState(false);
-  const [showHirerModal, setShowHirerModal] = useState(false);
-  const [selectedHirer, setSelectedHirer] = useState(null);
 
   useEffect(() => {
     if (user && !user.isProfileComplete) {
@@ -70,7 +67,7 @@ const FreelancerDashboard = () => {
 
   const handlePopupComplete = () => {
     setShowPopup(false);
-    navigate("/complete-profile");
+    navigate(`/user/${user._id}/edit-account`);
   };
 
   const handleApply = (jobId) => {
@@ -322,13 +319,7 @@ const FreelancerDashboard = () => {
   };
 
   const handleViewHirer = (hirer) => {
-    setSelectedHirer(hirer);
-    setShowHirerModal(true);
-  };
-
-  const closeHirerModal = () => {
-    setShowHirerModal(false);
-    setSelectedHirer(null);
+    navigate(`/profile/${hirer._id}`); // Navigate to the new profile page
   };
 
   return (
@@ -483,9 +474,10 @@ const FreelancerDashboard = () => {
                 return (
                   <div
                     key={job._id}
-                    className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition flex flex-col md:flex-row"
+                    className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition relative"
                   >
-                    <div className="flex items-center mr-4 mb-4 md:mb-0">
+                    {/* Profile Icon at Top-Left Inside Card */}
+                    <div className="absolute top-4 left-4">
                       <img
                         src={
                           job.hirer?.profilePicture
@@ -493,11 +485,13 @@ const FreelancerDashboard = () => {
                             : DefaultProfileImage
                         }
                         alt="Hirer Profile"
-                        className="w-16 h-16 rounded-full cursor-pointer"
+                        className="w-12 h-12 rounded-full cursor-pointer border-2 border-[#E8EEF1] shadow-sm"
                         onClick={() => handleViewHirer(job.hirer)}
                       />
                     </div>
-                    <div className="flex-1">
+
+                    {/* Content Aligned Below Icon */}
+                    <div className="ml-16">
                       <h3 className="text-xl font-bold text-gray-700">
                         {job.title}
                       </h3>
@@ -531,31 +525,31 @@ const FreelancerDashboard = () => {
                           ? "Rated"
                           : "Not rated yet"}
                       </p>
-                    </div>
 
-                    <div className="flex flex-col items-end space-y-3 mt-4 md:mt-0">
-                      <button
-                        onClick={() => handleSaveJob(job._id, isSaved)}
-                        className={`p-2 rounded-full transition-transform transform hover:scale-110 ${
-                          isSaved
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-300 text-gray-700"
-                        }`}
-                        title={isSaved ? "Unsave Job" : "Save Job"}
-                      >
-                        {isSaved ? (
-                          <FaBookmark size={20} />
-                        ) : (
-                          <FaRegBookmark size={20} />
-                        )}
-                      </button>
+                      <div className="flex justify-end space-x-3 mt-4">
+                        <button
+                          onClick={() => handleSaveJob(job._id, isSaved)}
+                          className={`p-2 rounded-full transition-transform transform hover:scale-110 ${
+                            isSaved
+                              ? "bg-blue-500 text-white"
+                              : "bg-gray-300 text-gray-700"
+                          }`}
+                          title={isSaved ? "Unsave Job" : "Save Job"}
+                        >
+                          {isSaved ? (
+                            <FaBookmark size={20} />
+                          ) : (
+                            <FaRegBookmark size={20} />
+                          )}
+                        </button>
 
-                      <button
-                        onClick={() => handleApply(job._id)}
-                        className="px-3 py-1 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] transition text-sm font-medium"
-                      >
-                        Apply Now
-                      </button>
+                        <button
+                          onClick={() => handleApply(job._id)}
+                          className="px-3 py-1 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] transition text-sm font-medium"
+                        >
+                          Apply Now
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -586,118 +580,32 @@ const FreelancerDashboard = () => {
             <p className="text-sm text-gray-500">{user?.role}</p>
             <div className="mt-6">
               <h4 className="text-sm font-semibold text-gray-700">Skills</h4>
-              <div className="flex flex-wrap justify-center space-x-2 mt-2">
-                {user?.skills?.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
-                  >
-                    {skill}
-                  </span>
-                ))}
+              <div className="flex flex-wrap justify-center gap-2 mt-2">
+                {user?.skills?.length > 0 ? (
+                  user.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-md shadow-sm"
+                    >
+                      {skill}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No skills added</p>
+                )}
               </div>
             </div>
-            <div className="mt-4 space-y-2">
+            <div className="mt-4">
               <Link
                 to={`/user/${user?._id}/edit-account`}
-                className="block px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+                className="block px-4 py-2 bg-[#1A2E46] text-white rounded-md hover:bg-[#58A6FF]"
               >
-                Edit Account
-              </Link>
-              <Link
-                to={`/user/${user?._id}/add-enhancements`}
-                className="block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                Add Enhancements
+                Edit Profile
               </Link>
             </div>
           </div>
         </aside>
       </div>
-
-      {/* Hirer Details Modal */}
-      {showHirerModal && selectedHirer && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={closeHirerModal}
-        >
-          <div
-            className="bg-white rounded-lg p-6 shadow-lg w-1/2 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={closeHirerModal}
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-              aria-label="Close modal"
-            >
-              ×
-            </button>
-            <h2 className="text-lg font-bold mb-4">Hirer Profile</h2>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <img
-                  src={
-                    selectedHirer.profilePicture
-                      ? `http://localhost:5000/${selectedHirer.profilePicture}`
-                      : DefaultProfileImage
-                  }
-                  alt="Hirer Profile"
-                  className="w-24 h-24 rounded-full mr-4"
-                />
-                <div>
-                  <h3 className="text-xl font-semibold">
-                    {selectedHirer.firstName} {selectedHirer.lastName}
-                  </h3>
-                  <p className="text-gray-600">{selectedHirer.email}</p>
-                </div>
-              </div>
-              {selectedHirer.businessDetails && (
-                <div>
-                  <h4 className="font-semibold">Business Details</h4>
-                  <p>Company: {selectedHirer.businessDetails.companyName}</p>
-                  <p>Industry: {selectedHirer.businessDetails.industry}</p>
-                  <p>
-                    Description: {selectedHirer.businessDetails.description}
-                  </p>
-                  {selectedHirer.businessDetails.website && (
-                    <p>
-                      Website:{" "}
-                      <a
-                        href={selectedHirer.businessDetails.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                      >
-                        {selectedHirer.businessDetails.website}
-                      </a>
-                    </p>
-                  )}
-                </div>
-              )}
-              {selectedHirer.pastWork?.length > 0 && (
-                <div>
-                  <h4 className="font-semibold">Past Work</h4>
-                  {selectedHirer.pastWork.map((work, index) => (
-                    <div key={index} className="mb-2">
-                      <p>{work.title}</p>
-                      <p>{work.description}</p>
-                      <p>Duration: {work.duration}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div>
-                <h4 className="font-semibold">Rating</h4>
-                <p>
-                  {selectedHirer.ratings?.length > 0
-                    ? "Rated (rating system to be implemented)"
-                    : "Not rated yet"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
