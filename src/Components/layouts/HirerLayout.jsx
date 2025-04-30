@@ -1,4 +1,3 @@
-// job-application-frontend/src/Components/layouts/HirerLayout.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { UserData } from "../../context/UserContext";
@@ -13,6 +12,7 @@ import {
   FaCalendar,
   FaEnvelope,
   FaInfoCircle,
+  FaUser, // Added for View My Profile icon
 } from "react-icons/fa";
 import { useNotifications } from "../../context/NotificationContext";
 import axios from "axios";
@@ -156,6 +156,19 @@ const HirerLayout = ({ children }) => {
               >
                 <FaHome className="w-5 h-5 text-[#58A6FF]" />
                 <span>Home</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={`/profile/${user?._id}`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/profile/${user?._id}`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaUser className="w-5 h-5 text-[#58A6FF]" />
+                <span>View My Profile</span>
               </Link>
             </li>
             <li>
@@ -367,6 +380,13 @@ const HirerLayout = ({ children }) => {
               {isProfileOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-md z-50">
                   <Link
+                    to={`/profile/${user?._id}`}
+                    onClick={() => setIsProfileOpen(false)}
+                    className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-gray-100"
+                  >
+                    View My Profile
+                  </Link>
+                  <Link
                     to={`/hirer/${user?._id}/edit-account`}
                     onClick={() => setIsProfileOpen(false)}
                     className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-gray-100"
@@ -374,11 +394,11 @@ const HirerLayout = ({ children }) => {
                     Edit Account
                   </Link>
                   <Link
-                    to={`/hirer/${user?._id}/edit-profile`}
+                    to={`/hirer/${user?._id}/manage-business-profile`}
                     onClick={() => setIsProfileOpen(false)}
                     className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-gray-100"
                   >
-                    Edit Profile
+                    Manage profile details
                   </Link>
                   <button
                     onClick={handleLogout}
