@@ -1,4 +1,3 @@
-// job-application-frontend/src/pages/hirer/Applications.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { UserData } from "../../context/UserContext";
@@ -18,9 +17,7 @@ const socket = io("http://localhost:5000", {
 // Add error handling for Socket.IO connection
 socket.on("connect_error", (error) => {
   console.error("Socket.IO connection error:", error);
-  toast.error(
-    "Failed to connect to notification server. Real-time updates may not work."
-  );
+  // Removed toast.error to prevent user notification
 });
 
 socket.on("connect", () => {
@@ -43,8 +40,6 @@ const Applications = () => {
     return now.toISOString().slice(0, 16);
   });
   const [scheduling, setScheduling] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [selectedFreelancer, setSelectedFreelancer] = useState(null);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -233,26 +228,8 @@ const Applications = () => {
   };
 
   const handleViewProfile = (freelancer) => {
-    console.log("Viewing profile for freelancer:", freelancer);
-    setSelectedFreelancer(freelancer);
-    setShowProfileModal(true);
+    navigate(`/profile/${freelancer._id}`); // Navigate to the new profile page
   };
-
-  const closeProfileModal = () => {
-    setShowProfileModal(false);
-    setSelectedFreelancer(null);
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape" && (showScheduleModal || showProfileModal)) {
-        if (showScheduleModal) closeScheduleModal();
-        if (showProfileModal) closeProfileModal();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showScheduleModal, showProfileModal]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -270,9 +247,10 @@ const Applications = () => {
         {applications.map((app) => (
           <div
             key={app._id}
-            className="bg-white shadow rounded-lg p-4 flex flex-col md:flex-row"
+            className="bg-white shadow rounded-lg p-4 relative"
           >
-            <div className="flex items-center mr-4 mb-4 md:mb-0">
+            {/* Profile Icon at Top-Left Inside Card */}
+            <div className="absolute top-4 left-4">
               <img
                 src={
                   app.userId?.profilePicture
@@ -283,7 +261,7 @@ const Applications = () => {
                     : DefaultProfileImage
                 }
                 alt="Profile"
-                className="w-16 h-16 rounded-full cursor-pointer"
+                className="w-12 h-12 rounded-full cursor-pointer border-2 border-[#E8EEF1] shadow-sm"
                 onClick={() => handleViewProfile(app.userId)}
                 onError={(e) => {
                   console.error(
@@ -294,7 +272,9 @@ const Applications = () => {
                 }}
               />
             </div>
-            <div className="flex-1 mr-4 mb-4 md:mb-0">
+
+            {/* Content Aligned Below Icon */}
+            <div className="ml-16">
               <h2 className="font-semibold text-lg mb-1">
                 {app.userId
                   ? `${app.userId.firstName} ${app.userId.lastName}`
@@ -354,9 +334,8 @@ const Applications = () => {
                   </p>
                 </div>
               )}
-            </div>
-            <div className="flex flex-col items-center md:items-start space-y-3">
-              <div className="flex space-x-3">
+
+              <div className="flex justify-end space-x-3 mt-4">
                 <button
                   onClick={() => handleAcceptApplication(app._id)}
                   className="bg-green-600 text-white px-5 py-2 rounded-md shadow-sm hover:bg-green-700 active:bg-green-800 transition duration-200"
@@ -371,37 +350,36 @@ const Applications = () => {
                 >
                   Reject
                 </button>
-              </div>
-
-              {app.resume ? (
-                <a
-                  href={`http://localhost:5000/${app.resume}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-200 transition duration-200"
-                >
-                  <svg
-                    className="w-5 h-5 mr-2 text-gray-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
+                {app.resume ? (
+                  <a
+                    href={`http://localhost:5000/${app.resume}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-200 transition duration-200"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                    ></path>
-                  </svg>
-                  <span>CV/Resume</span>
-                  <span className="ml-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                    PDF
-                  </span>
-                </a>
-              ) : (
-                <p className="text-red-500">No Resume</p>
-              )}
+                    <svg
+                      className="w-5 h-5 mr-2 text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      ></path>
+                    </svg>
+                    <span>CV/Resume</span>
+                    <span className="ml-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                      PDF
+                    </span>
+                  </a>
+                ) : (
+                  <p className="text-red-500">No Resume</p>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -454,200 +432,6 @@ const Applications = () => {
               >
                 Schedule
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showProfileModal && selectedFreelancer && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={closeProfileModal}
-        >
-          <div
-            className="bg-white rounded-lg p-6 shadow-lg w-1/2 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={closeProfileModal}
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-              aria-label="Close modal"
-            >
-              ×
-            </button>
-            <h2 className="text-lg font-bold mb-4">Freelancer Profile</h2>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <img
-                  src={
-                    selectedFreelancer.profilePicture
-                      ? `http://localhost:5000/${selectedFreelancer.profilePicture.replace(
-                          /\\/g,
-                          "/"
-                        )}`
-                      : DefaultProfileImage
-                  }
-                  alt="Profile"
-                  className="w-24 h-24 rounded-full mr-4"
-                  onError={(e) => {
-                    console.error(
-                      "Error loading profile picture in modal:",
-                      selectedFreelancer.profilePicture
-                    );
-                    e.target.src = DefaultProfileImage;
-                  }}
-                />
-                <div>
-                  <h3 className="text-xl font-semibold">
-                    {selectedFreelancer.firstName} {selectedFreelancer.lastName}
-                  </h3>
-                  <p className="text-gray-600">{selectedFreelancer.email}</p>
-                </div>
-              </div>
-              <div>
-                <h4 className="font-semibold">Skills</h4>
-                <p>{selectedFreelancer.skills.join(", ")}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold">Education</h4>
-                <p>{selectedFreelancer.education.join(", ")}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold">Experience</h4>
-                <p>{selectedFreelancer.experience?.join(", ") || "N/A"}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold">Links</h4>
-                {selectedFreelancer.github && (
-                  <p>
-                    GitHub:{" "}
-                    <a
-                      href={selectedFreelancer.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      {selectedFreelancer.github}
-                    </a>
-                  </p>
-                )}
-                {selectedFreelancer.linkedin && (
-                  <p>
-                    LinkedIn:{" "}
-                    <a
-                      href={selectedFreelancer.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      {selectedFreelancer.linkedin}
-                    </a>
-                  </p>
-                )}
-              </div>
-              <div>
-                <h4 className="font-semibold">Certifications</h4>
-                {selectedFreelancer.enhancements
-                  ?.filter((e) => e.type === "certification")
-                  .map((cert, index) => (
-                    <div key={index} className="mb-2">
-                      <p>
-                        {cert.details.name} - {cert.details.issuer}
-                      </p>
-                      <p>
-                        Issued:{" "}
-                        {new Date(cert.details.issueDate).toLocaleDateString()}
-                      </p>
-                      {cert.details.images &&
-                        cert.details.images.length > 0 && (
-                          <div className="flex space-x-2 mt-1">
-                            {cert.details.images.map((img, imgIndex) => (
-                              <img
-                                key={imgIndex}
-                                src={`http://localhost:5000/${img.replace(
-                                  /\\/g,
-                                  "/"
-                                )}`}
-                                alt="Certificate"
-                                className="w-20 h-20 object-cover rounded"
-                                onError={(e) => {
-                                  console.error(
-                                    "Error loading certificate image:",
-                                    img
-                                  );
-                                  e.target.style.display = "none";
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
-                    </div>
-                  )) || <p>No certifications available.</p>}
-              </div>
-              <div>
-                <h4 className="font-semibold">Achievements</h4>
-                {selectedFreelancer.enhancements
-                  ?.filter((e) => e.type === "achievement")
-                  .map((ach, index) => (
-                    <div key={index} className="mb-2">
-                      <p>{ach.details.name}</p>
-                      <p>{ach.details.description}</p>
-                      <p>
-                        Date:{" "}
-                        {new Date(ach.details.issueDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                  )) || <p>No achievements available.</p>}
-              </div>
-              <div>
-                <h4 className="font-semibold">Portfolio</h4>
-                {selectedFreelancer.enhancements
-                  ?.filter((e) => e.type === "portfolio")
-                  .map((port, index) => (
-                    <div key={index} className="mb-2">
-                      <p>{port.details.name}</p>
-                      <p>{port.details.description}</p>
-                      <p>
-                        Technologies: {port.details.technologies.join(", ")}
-                      </p>
-                      {port.details.link && (
-                        <p>
-                          <a
-                            href={port.details.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                          >
-                            View Project
-                          </a>
-                        </p>
-                      )}
-                      {port.details.images &&
-                        port.details.images.length > 0 && (
-                          <div className="flex space-x-2 mt-1">
-                            {port.details.images.map((img, imgIndex) => (
-                              <img
-                                key={imgIndex}
-                                src={`http://localhost:5000/${img.replace(
-                                  /\\/g,
-                                  "/"
-                                )}`}
-                                alt="Portfolio"
-                                className="w-20 h-20 object-cover rounded"
-                                onError={(e) => {
-                                  console.error(
-                                    "Error loading portfolio image:",
-                                    img
-                                  );
-                                  e.target.style.display = "none";
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
-                    </div>
-                  )) || <p>No portfolio items available.</p>}
-              </div>
             </div>
           </div>
         </div>
