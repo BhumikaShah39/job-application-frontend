@@ -11,6 +11,7 @@ import {
   FaBell,
   FaEnvelope,
   FaInfoCircle,
+  FaUser, // Added for View My Profile icon
 } from "react-icons/fa";
 import io from "socket.io-client";
 import axios from "axios";
@@ -170,6 +171,19 @@ const FreelancerLayout = ({ children }) => {
             </li>
             <li>
               <Link
+                to={`/profile/${user?._id}`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/profile/${user?._id}`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaUser className="w-5 h-5 text-[#58A6FF]" />
+                <span>View My Profile</span>
+              </Link>
+            </li>
+            <li>
+              <Link
                 to={`/user/${user?._id}/applications`}
                 className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
                   isActive(`/user/${user?._id}/applications`)
@@ -321,6 +335,12 @@ const FreelancerLayout = ({ children }) => {
               </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-md z-50">
+                  <Link
+                    to={`/profile/${user?._id}`}
+                    className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-gray-100"
+                  >
+                    View My Profile
+                  </Link>
                   <Link
                     to="/user/profile"
                     className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-gray-100"
