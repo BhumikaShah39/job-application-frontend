@@ -14,6 +14,7 @@ export const UserContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const refreshUser = async (token) => {
+    console.log("refreshUser called with token:", token);
     if (!token) {
       console.warn("No token found in localStorage.");
       setUser(null);
@@ -64,6 +65,7 @@ export const UserContextProvider = ({ children }) => {
       setIsAuth(false);
       localStorage.removeItem("token");
     } finally {
+      console.log("Setting loading to false in refreshUser");
       setLoading(false);
     }
   };
@@ -161,7 +163,7 @@ export const UserContextProvider = ({ children }) => {
     localStorage.removeItem("token");
     setUser(null);
     setIsAuth(false);
-    setLoading(false); // Ensure loading state is reset on logout
+    setLoading(false);
     navigate("/login");
   };
 
