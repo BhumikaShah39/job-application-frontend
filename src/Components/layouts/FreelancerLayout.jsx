@@ -11,11 +11,14 @@ import {
   FaBell,
   FaEnvelope,
   FaInfoCircle,
-  FaUser, // Added for View My Profile icon
+  FaUser,
+  FaCreditCard,
+  FaEdit,
 } from "react-icons/fa";
 import io from "socket.io-client";
 import axios from "axios";
 import KaryaLogo from "../../assets/LogoWithText.png";
+import ProfileCompletionPopup from "../../pages/freelancer/ProfileCompletionPopup";
 
 const socket = io("http://localhost:5000");
 
@@ -31,6 +34,7 @@ const FreelancerLayout = ({ children }) => {
   const dropdownRef = useRef(null);
   const notificationRef = useRef(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   const handleLogoClick = (e) => {
     const currentPath = location.pathname;
@@ -128,11 +132,33 @@ const FreelancerLayout = ({ children }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (user && !user.isProfileComplete) {
+      setShowPopup(true);
+    } else {
+      setShowPopup(false);
+    }
+  }, [user]);
+
+  const handlePopupClose = () => setShowPopup(false);
+
+  const handlePopupComplete = () => {
+    setShowPopup(false);
+    navigate(`/user/${user._id}/edit-profile`);
+  };
+
   const userInitial = user?.firstName?.charAt(0)?.toUpperCase() || "U";
   const isActive = (path) => location.pathname === path;
 
   return (
     <div className="flex h-screen bg-gray-100">
+      {showPopup && (
+        <ProfileCompletionPopup
+          onClose={handlePopupClose}
+          onComplete={handlePopupComplete}
+        />
+      )}
+
       <aside
         className={`fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-md transform transition-transform duration-200 ease-in-out ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
@@ -180,6 +206,32 @@ const FreelancerLayout = ({ children }) => {
               >
                 <FaUser className="w-5 h-5 text-[#58A6FF]" />
                 <span>View My Profile</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={`/user/${user?._id}/edit-account`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/user/${user?._id}/edit-account`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaUser className="w-5 h-5 text-[#58A6FF]" />
+                <span>Edit Account</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={`/user/${user?._id}/edit-profile`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/user/${user?._id}/edit-profile`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaEdit className="w-5 h-5 text-[#58A6FF]" />
+                <span>Edit Profile Details</span>
               </Link>
             </li>
             <li>
@@ -232,6 +284,19 @@ const FreelancerLayout = ({ children }) => {
               >
                 <FaCalendar className="w-5 h-5 text-[#58A6FF]" />
                 <span>Scheduled Meetings</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={`/user/${user?._id}/payments`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/user/${user?._id}/payments`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaCreditCard className="w-5 h-5 text-[#58A6FF]" />
+                <span>Payments</span>
               </Link>
             </li>
           </ul>
