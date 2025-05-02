@@ -1,3 +1,4 @@
+// UserContext.jsx (updated)
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
@@ -24,7 +25,6 @@ export const UserContextProvider = ({ children }) => {
     }
 
     try {
-      // Decode the token to check expiration
       const decoded = jwtDecode(token);
       console.log("Decoded token:", decoded);
       const currentTime = Date.now() / 1000;
@@ -37,7 +37,6 @@ export const UserContextProvider = ({ children }) => {
         return;
       }
 
-      // Fetch user data from the backend
       console.log("Fetching current user data with token:", token);
       const { data } = await axios.get(
         `${job_application_backend}/api/users/current`,
@@ -91,12 +90,10 @@ export const UserContextProvider = ({ children }) => {
       setIsAuth(true);
       setBtnLoading(false);
 
-      // Call refreshUser before navigating to ensure state is updated
       console.log("Refreshing user data before navigation...");
       await refreshUser(data.token);
       console.log("refreshUser completed.");
 
-      // Navigate based on user role
       console.log(
         "Navigating for role:",
         data.user.role,
