@@ -67,13 +67,14 @@ const interestsData = {
 };
 
 const CompleteProfileForm = () => {
-  const [selectedCategory, setSelectedCategory] = useState(null); // Tracks the selected category
-  const [selectedInterests, setSelectedInterests] = useState([]); // Tracks selected subcategories
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedInterests, setSelectedInterests] = useState([]);
   const [education, setEducation] = useState([""]);
   const [skills, setSkills] = useState([]);
-  const [newSkill, setNewSkill] = useState(""); // Added to handle new skill input
+  const [newSkill, setNewSkill] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [github, setGithub] = useState("");
+  const [khaltiId, setKhaltiId] = useState("");
   const [experience, setExperience] = useState([""]);
   const [profilePicture, setProfilePicture] = useState(null);
 
@@ -101,7 +102,7 @@ const CompleteProfileForm = () => {
   // Prevent Enter key from submitting the form in any input
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
-      e.preventDefault(); // Stop form submission
+      e.preventDefault();
       if (e.target.name === "newSkill" && newSkill.trim() !== "") {
         setSkills([...skills, newSkill.trim()]);
         setNewSkill("");
@@ -113,14 +114,15 @@ const CompleteProfileForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(); // Create FormData object for handling file upload
+    const formData = new FormData();
     formData.append("profilePicture", profilePicture);
-    formData.append("interests", JSON.stringify(selectedInterests)); // Convert interests to JSON string
-    formData.append("education", JSON.stringify(education)); // Convert education to JSON string
-    formData.append("skills", JSON.stringify(skills)); // Convert skills to JSON string
+    formData.append("interests", JSON.stringify(selectedInterests));
+    formData.append("education", JSON.stringify(education));
+    formData.append("skills", JSON.stringify(skills));
     formData.append("linkedin", linkedin);
     formData.append("github", github);
-    formData.append("experience", JSON.stringify(experience)); // Convert experience to JSON string
+    formData.append("khaltiId", khaltiId);
+    formData.append("experience", JSON.stringify(experience));
 
     const token = localStorage.getItem("token");
 
@@ -137,14 +139,14 @@ const CompleteProfileForm = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data", // Required for file uploads
+            "Content-Type": "multipart/form-data",
           },
         }
       );
 
       if (response.status === 200) {
         toast.success("Profile completed successfully!");
-        window.location.href = `/user/${response.data.user._id}`; // Redirect to the user's dashboard
+        window.location.href = `/user/${response.data.user._id}`;
       }
     } catch (error) {
       console.error("Error completing profile:", error.response?.data || error);
@@ -152,7 +154,6 @@ const CompleteProfileForm = () => {
         error.response?.data?.message ||
         "Failed to complete profile. Please try again.";
       toast.error(errorMessage);
-      // Only log out if explicitly a token issue (e.g., "Token expired" or similar)
       if (
         error.response?.status === 401 &&
         error.response?.data?.message?.toLowerCase().includes("token")
@@ -174,7 +175,7 @@ const CompleteProfileForm = () => {
       </h2>
 
       {/* Profile Picture */}
-      <div className="space-y-4">
+      <div className="space-y-4 mb-6">
         <label className="block font-medium mb-2 text-[#1A2E46]">
           Profile Picture
         </label>
@@ -186,6 +187,7 @@ const CompleteProfileForm = () => {
         />
       </div>
 
+      {/* Interests */}
       <div className="mb-6">
         <label className="block text-xl font-semibold text-[#1A2E46] mb-4">
           Select Your Interests
@@ -271,9 +273,9 @@ const CompleteProfileForm = () => {
                 newEdu[index] = e.target.value;
                 setEducation(newEdu);
               }}
-              onKeyPress={handleKeyPress} // Prevent Enter submission
+              onKeyPress={handleKeyPress}
               className="flex-grow border rounded-lg p-2"
-              placeholder="Enter your education"
+              placeholder="Enter your education (e.g., B.Sc. Computer Science)"
             />
             {education.length > 1 && (
               <button
@@ -303,12 +305,12 @@ const CompleteProfileForm = () => {
         <div className="flex items-center space-x-2">
           <input
             type="text"
-            name="newSkill" // Add name for identification in handleKeyPress
+            name="newSkill"
             value={newSkill}
             onChange={(e) => setNewSkill(e.target.value)}
-            onKeyPress={handleKeyPress} // Add skill on Enter
+            onKeyPress={handleKeyPress}
             className="flex-grow border rounded-lg p-2"
-            placeholder="Enter a skill"
+            placeholder="Enter a skill (e.g., JavaScript)"
           />
           <button
             type="button"
@@ -339,30 +341,50 @@ const CompleteProfileForm = () => {
         </ul>
       </div>
 
-      {/* LinkedIn */}
+      {/* Social Links */}
       <div className="mb-4">
-        <label className="block font-medium mb-2">LinkedIn Profile</label>
-        <input
-          type="url"
-          value={linkedin}
-          onChange={(e) => setLinkedin(e.target.value)}
-          onKeyPress={handleKeyPress} // Prevent Enter submission
-          className="w-full border rounded-lg p-2"
-          placeholder="Enter your LinkedIn profile URL"
-        />
-      </div>
-
-      {/* GitHub */}
-      <div className="mb-4">
-        <label className="block font-medium mb-2">GitHub Profile</label>
-        <input
-          type="url"
-          value={github}
-          onChange={(e) => setGithub(e.target.value)}
-          onKeyPress={handleKeyPress} // Prevent Enter submission
-          className="w-full border rounded-lg p-2"
-          placeholder="Enter your GitHub profile URL"
-        />
+        <label className="block font-medium mb-2">Social Links</label>
+        <div className="space-y-4">
+          <div>
+            <label className="block font-medium mb-2">
+              LinkedIn Profile (Optional)
+            </label>
+            <input
+              type="url"
+              value={linkedin}
+              onChange={(e) => setLinkedin(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="w-full border rounded-lg p-2"
+              placeholder="Enter your LinkedIn profile URL"
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-2">
+              GitHub Profile (Optional)
+            </label>
+            <input
+              type="url"
+              value={github}
+              onChange={(e) => setGithub(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="w-full border rounded-lg p-2"
+              placeholder="Enter your GitHub profile URL"
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-2">
+              Khalti ID (Phone Number) (Optional)
+            </label>
+            <input
+              type="text"
+              value={khaltiId}
+              onChange={(e) => setKhaltiId(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="w-full border rounded-lg p-2"
+              placeholder="Enter your Khalti registered phone number (e.g., 9800000001)"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Experience */}
@@ -378,9 +400,9 @@ const CompleteProfileForm = () => {
                 newExp[index] = e.target.value;
                 setExperience(newExp);
               }}
-              onKeyPress={handleKeyPress} // Prevent Enter submission
+              onKeyPress={handleKeyPress}
               className="flex-grow border rounded-lg p-2"
-              placeholder="Enter your experience"
+              placeholder="Enter your experience (e.g., Software Engineer at XYZ)"
             />
             {experience.length > 1 && (
               <button
