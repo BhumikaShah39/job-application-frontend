@@ -5,12 +5,15 @@ import { useNavigate, Link } from "react-router-dom";
 import ProfileCompletionPopup from "./ProfileCompletionPopup";
 import DefaultProfileImage from "../../assets/DefaultProfileImage.avif";
 import JobApplicationForm from "./JobApplicationForm";
-import { FaRegBookmark, FaBookmark } from "react-icons/fa";
 import {
+  FaRegBookmark,
+  FaBookmark,
   FaChevronDown,
   FaChevronUp,
   FaFilter,
   FaHistory,
+  FaUser,
+  FaEdit,
 } from "react-icons/fa";
 
 const categories = [
@@ -27,7 +30,6 @@ const FreelancerDashboard = () => {
   const { user, isAuth, refreshUser } = UserData();
   const [jobs, setJobs] = useState([]);
   const [recommendedJobs, setRecommendedJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
   const [activeTab, setActiveTab] = useState("Most Recent");
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
@@ -58,7 +60,9 @@ const FreelancerDashboard = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem("token");
-      await refreshUser(token);
+      if (token) {
+        await refreshUser(token);
+      }
     };
     fetchUserData();
   }, [refreshUser]);
@@ -67,14 +71,12 @@ const FreelancerDashboard = () => {
 
   const handlePopupComplete = () => {
     setShowPopup(false);
-    navigate(`/user/${user._id}/edit-account`);
+    navigate(`/user/${user._id}/edit-profile`);
   };
 
   const handleApply = (jobId) => {
-    console.log("Apply button clicked for job ID:", jobId);
     setSelectedJobId(jobId);
     setShowApplicationForm(true);
-    console.log("Show application form state:", true);
   };
 
   const closeApplicationForm = () => {
@@ -91,7 +93,6 @@ const FreelancerDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setJobs(data.jobs);
-        setFilteredJobs(data.jobs);
         setHasFetchedJobs(true);
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -126,7 +127,6 @@ const FreelancerDashboard = () => {
 
   const handleSaveJob = async (jobId, isSaved) => {
     try {
-      console.log("Saving Job ID:", jobId);
       const token = localStorage.getItem("token");
       if (isSaved) {
         await axios.delete(
@@ -156,18 +156,15 @@ const FreelancerDashboard = () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        console.error("No token found, user is not authenticated.");
         setErrorRecommended("Please log in to view recommended jobs.");
         return;
       }
 
-      console.log("Fetching recommended jobs for user:", user?._id);
       const { data } = await axios.get(
         "http://localhost:5000/api/recommendations/recommended",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      console.log("Recommended Jobs Response:", data);
       setRecommendedJobs(data.recommendedJobs || []);
       setHasFetchedRecommended(true);
     } catch (error) {
@@ -176,7 +173,7 @@ const FreelancerDashboard = () => {
       if (errorData) {
         if (errorData.details) {
           errorMessage = errorData.details.includes("Cast to ObjectId failed")
-            ? "An error occurred due to invalid job data. Please try again later."
+            ? "Invalid job data. Try again later."
             : errorData.details;
         } else if (errorData.message) {
           errorMessage = errorData.message;
@@ -184,10 +181,6 @@ const FreelancerDashboard = () => {
       } else {
         errorMessage = error.message || errorMessage;
       }
-      console.error(
-        "Error fetching recommended jobs:",
-        errorData || error.message
-      );
       setErrorRecommended(errorMessage);
       setRecommendedJobs([]);
     } finally {
@@ -221,8 +214,7 @@ const FreelancerDashboard = () => {
         }
       );
 
-      console.log("Search API Response:", data);
-      setFilteredJobs(data.jobs);
+      setJobs(data.jobs);
       setHasFetchedRecommended(false);
     } catch (error) {
       console.error("Error fetching filtered jobs:", error);
@@ -239,9 +231,7 @@ const FreelancerDashboard = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const displayedJobs = useMemo(() => {
@@ -294,9 +284,10 @@ const FreelancerDashboard = () => {
         const token = localStorage.getItem("token");
         const { data } = await axios.get(
           "http://localhost:5000/api/jobs/search-history",
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
-        console.log("Fetched Search History:", data.searchHistory);
         setSearchHistory(data.searchHistory || []);
       } catch (error) {
         console.error("Error fetching search history:", error);
@@ -319,7 +310,7 @@ const FreelancerDashboard = () => {
   };
 
   const handleViewHirer = (hirer) => {
-    navigate(`/profile/${hirer._id}`); // Navigate to the new profile page
+    navigate(`/profile/${hirer._id}`);
   };
 
   return (
@@ -350,23 +341,15 @@ const FreelancerDashboard = () => {
 
       <div className="flex flex-col lg:flex-row bg-gray-100 min-h-screen p-6">
         <div className="flex-grow lg:w-3/4 p-4">
-          <h1 className="text-2xl font-bold text-gray-700 mb-4">
-            Welcome, {user?.firstName} {user?.lastName}!
-          </h1>
-          <h2 className="text-lg font-semibold text-gray-600">
-            Search for Jobs
-          </h2>
-
           <div className="flex items-center gap-4 mb-6 relative">
             <div ref={searchRef} className="relative w-full lg:w-1/2">
               <input
                 type="text"
-                placeholder="Search by job title, company name, or location..."
+                placeholder="Search jobs..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
               />
-
               {showHistory && searchHistory.length > 0 && (
                 <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg rounded-md mt-1 z-50 overflow-hidden">
                   {searchHistory.map((history, index) => (
@@ -388,8 +371,7 @@ const FreelancerDashboard = () => {
                 onClick={() => setShowFilters(!showFilters)}
                 className="flex items-center gap-2 px-4 py-2 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] focus:outline-none"
               >
-                <FaFilter />
-                Filters
+                <FaFilter /> Filters{" "}
                 {showFilters ? <FaChevronUp /> : <FaChevronDown />}
               </button>
 
@@ -460,14 +442,12 @@ const FreelancerDashboard = () => {
 
           <div className="mt-6 space-y-4">
             {activeTab === "Recommended" && loadingRecommended ? (
-              <p className="text-gray-500 text-center">
-                Loading recommended jobs...
-              </p>
+              <p className="text-gray-500 text-center">Loading...</p>
             ) : activeTab === "Recommended" && errorRecommended ? (
               <p className="text-red-500 text-center">{errorRecommended}</p>
             ) : (activeTab === "Most Recent" || activeTab === "Saved Jobs") &&
               loadingJobs ? (
-              <p className="text-gray-500 text-center">Loading jobs...</p>
+              <p className="text-gray-500 text-center">Loading...</p>
             ) : displayedJobs.length > 0 ? (
               displayedJobs.map((job) => {
                 const isSaved = savedJobs.includes(job._id);
@@ -476,7 +456,6 @@ const FreelancerDashboard = () => {
                     key={job._id}
                     className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition relative"
                   >
-                    {/* Profile Icon at Top-Left Inside Card */}
                     <div className="absolute top-4 left-4">
                       <img
                         src={
@@ -490,7 +469,6 @@ const FreelancerDashboard = () => {
                       />
                     </div>
 
-                    {/* Content Aligned Below Icon */}
                     <div className="ml-16">
                       <h3 className="text-xl font-bold text-gray-700">
                         {job.title}
@@ -506,24 +484,19 @@ const FreelancerDashboard = () => {
                         Location: {job.location}
                       </p>
                       <p className="text-sm text-gray-500">
-                        Job Type: {job.jobType}
+                        Type: {job.jobType}
                       </p>
 
                       <div className="flex space-x-2 mt-2">
                         <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
-                          Category: {job.category}
-                        </p>
-                        <p className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
-                          Subcategory: {job.subCategory}
+                          {job.category} | {job.subCategory}
                         </p>
                       </div>
 
                       <p className="mt-2 text-gray-600">{job.description}</p>
                       <p className="mt-2 text-gray-600">
                         Rating:{" "}
-                        {job.hirer?.ratings?.length > 0
-                          ? "Rated"
-                          : "Not rated yet"}
+                        {job.hirer?.ratings?.length > 0 ? "Rated" : "Not rated"}
                       </p>
 
                       <div className="flex justify-end space-x-3 mt-4">
@@ -547,7 +520,7 @@ const FreelancerDashboard = () => {
                           onClick={() => handleApply(job._id)}
                           className="px-3 py-1 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] transition text-sm font-medium"
                         >
-                          Apply Now
+                          Apply
                         </button>
                       </div>
                     </div>
@@ -555,7 +528,7 @@ const FreelancerDashboard = () => {
                 );
               })
             ) : (
-              <p className="text-gray-500 text-center">No jobs found.</p>
+              <p className="text-gray-500 text-center">No jobs found</p>
             )}
           </div>
         </div>
@@ -578,28 +551,34 @@ const FreelancerDashboard = () => {
               {user?.firstName} {user?.lastName}
             </h3>
             <p className="text-sm text-gray-500">{user?.role}</p>
-            <div className="mt-6">
-              <h4 className="text-sm font-semibold text-gray-700">Skills</h4>
-              <div className="flex flex-wrap justify-center gap-2 mt-2">
-                {user?.skills?.length > 0 ? (
-                  user.skills.map((skill, index) => (
+            {user?.skills?.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold text-gray-700">Skills</h4>
+                <div className="flex flex-wrap justify-center gap-2 mt-2">
+                  {user.skills.map((skill, index) => (
                     <span
                       key={index}
                       className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-md shadow-sm"
                     >
                       {skill}
                     </span>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">No skills added</p>
-                )}
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="mt-4">
+            )}
+            <div className="mt-4 space-y-2">
               <Link
                 to={`/user/${user?._id}/edit-account`}
-                className="block px-4 py-2 bg-[#1A2E46] text-white rounded-md hover:bg-[#58A6FF]"
+                className="block px-4 py-2 bg-[#1A2E46] text-white rounded-md hover:bg-[#58A6FF] flex items-center justify-center gap-2"
               >
+                <FaUser className="w-4 h-4" />
+                Edit Account
+              </Link>
+              <Link
+                to={`/user/${user?._id}/edit-profile`}
+                className="block px-4 py-2 bg-[#58A6FF] text-white rounded-md hover:bg-[#1A2E46] flex items-center justify-center gap-2"
+              >
+                <FaEdit className="w-4 h-4" />
                 Edit Profile
               </Link>
             </div>
