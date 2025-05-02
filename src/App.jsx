@@ -35,9 +35,11 @@ import FreelancerAnalytics from "./pages/freelancer/FreelancerAnalytics";
 import ScheduledMeetings from "./pages/ScheduledMeetings";
 import { NotificationProvider } from "./context/NotificationContext";
 import EditAccount from "./pages/EditAccount";
+import EditProfile from "./pages/freelancer/EditProfile";
 import ManageBusinessProfile from "./pages/hirer/ManageBusinessProfile";
 import AddEnhancements from "./pages/freelancer/AddEnhancements";
-import ProfileView from "./pages/ProfileView"; // Import the new ProfileView component
+import ProfileView from "./pages/ProfileView";
+import PaymentsPage from "./pages/PaymentsPage";
 
 const stripePromise = loadStripe(
   "pk_test_51RBwkS4ERPs70rNrlWi7xFEyIitr8ANpsVWPYfXQ0Urav38HLPKKf8Jcj6kbcgOJpnDvHl0476MH4BRpkP3nqQoh00ImNwgLuB"
@@ -122,6 +124,16 @@ function AppContent() {
             }
           />
           <Route
+            path="/user/:id/edit-profile"
+            element={
+              <PrivateRoute allowedRoles={["user"]}>
+                <FreelancerLayout>
+                  <EditProfile />
+                </FreelancerLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/user/:id/add-enhancements"
             element={
               <PrivateRoute allowedRoles={["user"]}>
@@ -177,6 +189,16 @@ function AppContent() {
               <PrivateRoute allowedRoles={["user"]}>
                 <FreelancerLayout>
                   <Projects />
+                </FreelancerLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/user/:id/payments"
+            element={
+              <PrivateRoute allowedRoles={["user"]}>
+                <FreelancerLayout>
+                  <PaymentsPage />
                 </FreelancerLayout>
               </PrivateRoute>
             }
@@ -293,6 +315,16 @@ function AppContent() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/hirer/:id/payments"
+            element={
+              <PrivateRoute allowedRoles={["hirer"]}>
+                <HirerLayout>
+                  <PaymentsPage />
+                </HirerLayout>
+              </PrivateRoute>
+            }
+          />
 
           {/* Project Routes */}
           <Route
@@ -317,6 +349,17 @@ function AppContent() {
           />
           <Route
             path="/projects/:id/payment"
+            element={
+              <PrivateRoute allowedRoles={["user", "hirer"]}>
+                <RoleBasedLayout>
+                  <PaymentPage />
+                </RoleBasedLayout>
+              </PrivateRoute>
+            }
+          />
+          {/* Add the payment-callback route */}
+          <Route
+            path="/payment-callback"
             element={
               <PrivateRoute allowedRoles={["user", "hirer"]}>
                 <RoleBasedLayout>
