@@ -7,12 +7,13 @@ import {
   FaHome,
   FaPlus,
   FaUsers,
-  FaBell as FaBellIcon,
   FaFolder,
   FaCalendar,
   FaEnvelope,
   FaInfoCircle,
-  FaUser, // Added for View My Profile icon
+  FaUser,
+  FaCreditCard,
+  FaEdit,
 } from "react-icons/fa";
 import { useNotifications } from "../../context/NotificationContext";
 import axios from "axios";
@@ -28,10 +29,12 @@ const HirerLayout = ({ children }) => {
   const notificationRef = useRef(null);
   const profileRef = useRef(null);
   const [isApplicationsOpen, setIsApplicationsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     const unreadNotifications = notifications.filter((notif) => !notif.isRead);
@@ -50,9 +53,7 @@ const HirerLayout = ({ children }) => {
           axios.put(
             `http://localhost:5000/api/notifications/${notif._id}/read`,
             {},
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+            { headers: { Authorization: `Bearer ${token}` } }
           )
         )
       );
@@ -68,9 +69,7 @@ const HirerLayout = ({ children }) => {
 
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
-    if (!isDropdownOpen) {
-      markAllAsRead();
-    }
+    if (!isDropdownOpen) markAllAsRead();
   };
 
   const handleLogout = () => {
@@ -78,20 +77,11 @@ const HirerLayout = ({ children }) => {
     navigate("/login");
   };
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen((prev) => !prev);
-  };
+  const toggleProfileDropdown = () => setIsProfileOpen((prev) => !prev);
 
-  const toggleProfileDropdown = () => {
-    setIsProfileOpen((prev) => !prev);
-  };
-
-  const toggleApplicationsMenu = () => {
-    setIsApplicationsOpen((prev) => !prev);
-  };
+  const toggleApplicationsMenu = () => setIsApplicationsOpen((prev) => !prev);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -106,16 +96,12 @@ const HirerLayout = ({ children }) => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const userInitial = user?.firstName?.charAt(0)?.toUpperCase() || "H";
 
-  const isActive = (path) => {
-    return location.pathname === path;
-  };
+  const isActive = (path) => location.pathname === path;
 
   const isViewApplicationsActive =
     isActive(`/hirer/${user?._id}/applications`) ||
@@ -169,6 +155,32 @@ const HirerLayout = ({ children }) => {
               >
                 <FaUser className="w-5 h-5 text-[#58A6FF]" />
                 <span>View My Profile</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={`/hirer/${user?._id}/edit-account`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/hirer/${user?._id}/edit-account`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaUser className="w-5 h-5 text-[#58A6FF]" />
+                <span>Edit Account</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={`/hirer/${user?._id}/manage-business-profile`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/hirer/${user?._id}/manage-business-profile`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaEdit className="w-5 h-5 text-[#58A6FF]" />
+                <span>Manage Profile</span>
               </Link>
             </li>
             <li>
@@ -234,7 +246,7 @@ const HirerLayout = ({ children }) => {
                     : "text-gray-500 hover:bg-[#D6E4FF]"
                 }`}
               >
-                <FaBellIcon className="w-5 h-5 text-[#58A6FF]" />
+                <FaBell className="w-5 h-5 text-[#58A6FF]" />
                 <span>Notifications</span>
               </Link>
             </li>
@@ -262,6 +274,19 @@ const HirerLayout = ({ children }) => {
               >
                 <FaCalendar className="w-5 h-5 text-[#58A6FF]" />
                 <span>Scheduled Meetings</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to={`/hirer/${user?._id}/payments`}
+                className={`flex items-center space-x-2 py-2 px-4 text-sm font-medium ${
+                  isActive(`/hirer/${user?._id}/payments`)
+                    ? "bg-[#D6E4FF] text-gray-500"
+                    : "text-gray-500 hover:bg-[#D6E4FF]"
+                }`}
+              >
+                <FaCreditCard className="w-5 h-5 text-[#58A6FF]" />
+                <span>Payments</span>
               </Link>
             </li>
           </ul>
@@ -301,69 +326,61 @@ const HirerLayout = ({ children }) => {
         />
       )}
 
-      <div className="flex flex-col flex-1">
+      <div className="flex-1 overflow-y-auto">
+        <div className="md:hidden p-4 bg-white shadow">
+          <button onClick={toggleMobileMenu} className="text-[#1A2E46]">
+            <Bars3Icon className="h-6 w-6" />
+          </button>
+        </div>
+
         <div className="bg-white shadow px-4 py-2 flex items-center justify-between">
-          <div className="md:hidden">
-            <button onClick={toggleMobileMenu} className="text-[#1A2E46]">
-              <Bars3Icon className="w-6 h-6" />
-            </button>
-          </div>
-
           <div className="hidden md:block text-xl text-[#1A2E46] font-bold ml-2">
-            {user?.role === "freelancer"
-              ? "Freelancer Dashboard"
-              : "Hirer Dashboard"}
+            Hirer Dashboard
           </div>
-
-          <div className="flex items-center space-x-4 relative">
-            <button
-              className="text-[#1A2E46] hover:text-[#58A6FF] relative"
-              title="Notifications"
-              onClick={toggleDropdown}
-              ref={notificationRef}
-            >
-              <FaBell className="w-5 h-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {isDropdownOpen && (
-              <div
-                ref={notificationRef}
-                className="absolute right-0 top-full mt-2 w-64 bg-white shadow-lg rounded-md p-3 border border-gray-200 z-50"
+          <div className="flex items-center space-x-4">
+            <div className="relative" ref={notificationRef}>
+              <button
+                onClick={toggleDropdown}
+                className="text-[#1A2E46] hover:text-[#58A6FF] relative"
               >
-                <div className="flex justify-between items-center mb-2">
-                  <p className="font-semibold text-gray-800">Notifications</p>
-                  <button
-                    onClick={() => setIsDropdownOpen(false)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {notifications.length === 0 ? (
-                  <p className="text-gray-500 text-sm text-center">
-                    No new notifications
-                  </p>
-                ) : (
-                  notifications.map((notif, index) => (
-                    <div
-                      key={index}
-                      className="p-2 border-b last:border-none cursor-pointer hover:bg-gray-100"
-                    >
-                      <p className="text-sm text-gray-800">{notif.message}</p>
-                      <span className="text-xs text-gray-400">
-                        {new Date(notif.timestamp).toLocaleString()}
-                      </span>
-                    </div>
-                  ))
+                <FaBell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    {unreadCount}
+                  </span>
                 )}
-              </div>
-            )}
+              </button>
+              {isDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white shadow-lg rounded-md p-3 border border-gray-200 z-50">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-semibold text-gray-800">Notifications</p>
+                    <button
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <XMarkIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {notifications.length === 0 ? (
+                    <p className="text-gray-500 text-sm text-center">
+                      No new notifications
+                    </p>
+                  ) : (
+                    notifications.map((notif, index) => (
+                      <div
+                        key={index}
+                        className="p-2 border-b last:border-none cursor-pointer hover:bg-gray-100"
+                      >
+                        <p className="text-sm text-gray-800">{notif.message}</p>
+                        <span className="text-xs text-gray-400">
+                          {new Date(notif.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="relative" ref={profileRef}>
               <button
@@ -398,7 +415,7 @@ const HirerLayout = ({ children }) => {
                     onClick={() => setIsProfileOpen(false)}
                     className="block px-4 py-2 text-sm text-[#1A2E46] hover:bg-gray-100"
                   >
-                    Manage profile details
+                    Manage Profile
                   </Link>
                   <button
                     onClick={handleLogout}
@@ -412,7 +429,7 @@ const HirerLayout = ({ children }) => {
           </div>
         </div>
 
-        <div className="p-4 flex-1 overflow-y-auto">{children}</div>
+        <div className="p-4">{children}</div>
       </div>
     </div>
   );
