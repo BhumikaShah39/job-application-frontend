@@ -1,3 +1,4 @@
+// PaymentPage.jsx
 import React, { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -25,7 +26,7 @@ const stripePromise = loadStripe(
   "pk_test_51RBwkS4ERPs70rNrlWi7xFEyIitr8ANpsVWPYfXQ0Urav38HLPKKf8Jcj6kbcgOJpnDvHl0476MH4BRpkP3nqQoh00ImNwgLuB"
 );
 
-const PaymentForm = ({
+const StripePaymentForm = ({
   amount,
   projectTitle,
   jobId,
@@ -37,7 +38,6 @@ const PaymentForm = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [paymentId, setPaymentId] = useState(null);
 
   const handleStripePayment = async (e) => {
     e.preventDefault();
@@ -164,19 +164,20 @@ const PaymentForm = ({
 };
 
 const PaymentPage = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // This will be undefined for /payment-callback
   const { user } = UserData();
   const [projectDetails, setProjectDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(null);
+  const [khaltiError, setKhaltiError] = useState(null);
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || `/hirer/${user._id}/projects`;
-  const [paymentMethod, setPaymentMethod] = useState(null);
-  const [khaltiError, setKhaltiError] = useState(null);
 
   useEffect(() => {
-    const fetchProjectDetails = async () => {
+    const fetchProjectDetails = async (projectId) => {
       const token = localStorage.getItem("token");
       if (!token) {
         navigate("/");
@@ -185,7 +186,7 @@ const PaymentPage = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/projects/${id}`,
+          `http://localhost:5000/api/projects/${projectId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -200,57 +201,61 @@ const PaymentPage = () => {
       }
     };
 
-    fetchProjectDetails();
-  }, [id, navigate]);
+    // Get projectId from either useParams or query parameters
+    const query = new URLSearchParams(location.search);
+    const projectIdFromQuery = query.get("projectId");
+    const projectId = id || projectIdFromQuery; // Use id from URL or query parameter
+
+    if (projectId) {
+      fetchProjectDetails(projectId);
+    } else {
+      setError("Project ID not found.");
+      setLoading(false);
+    }
+  }, [id, navigate, location]);
+
+  useEffect(() => {
+    // Load Khalti Checkout script dynamically
+    const script = document.createElement("script");
+    script.src = "https://khalti.com/static/khalti-checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const handleKhaltiPayment = async () => {
     setPaymentMethod("khalti");
+    setKhaltiError(null);
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/khalti/convert-to-npr",
+      const token = localStorage.getItem("token");
+      const { data } = await axios.post(
+        "http://localhost:5000/api/payment/initiate-khalti-payment",
         {
-          params: { amount: projectDetails.payment },
+          amount: projectDetails.payment,
+          projectId: projectDetails._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
-      const amountInNPR = response.data.amount;
 
-      const config = {
-        publicKey: "17a192078ec54f44a2861cec1e7a6a79",
-        productIdentity: projectDetails._id,
-        productName: projectDetails.title,
-        productUrl: window.location.href,
-        eventHandler: {
-          async onSuccess(payload) {
-            // Call the backend to save the Khalti payment
-            await axios.post(
-              "http://localhost:5000/api/payment/khalti-callback",
-              {
-                pidx: payload.pidx,
-                amount: payload.amount,
-                projectId: projectDetails._id,
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              }
-            );
-            toast.success(
-              "Payment Successful! Project status updated to Completed."
-            );
-            navigate(from);
-          },
-          onError(error) {
-            setKhaltiError("Failed to initiate Khalti payment.");
-          },
-        },
-        paymentPreference: ["KHALTI"],
-      };
-
-      const checkout = new window.KhaltiCheckout(config);
-      checkout.show({ amount: Math.round(amountInNPR * 100) });
+      window.location.href = data.payment_url;
     } catch (error) {
-      setKhaltiError("Failed to initiate Khalti payment.");
+      const errorMessage =
+        error.response?.data?.error || "Failed to initiate Khalti payment";
+      const errorDetails = error.response?.data?.details || error.message;
+      setKhaltiError(
+        `${errorMessage}${errorDetails ? `: ${errorDetails}` : ""}`
+      );
+      console.error(
+        "Khalti payment error:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -261,6 +266,15 @@ const PaymentPage = () => {
   const handleSuccessNavigate = () => {
     navigate(from);
   };
+
+  useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    if (query.get("payment") === "success") {
+      setSuccess(true);
+      toast.success("Payment Successful! Project status updated to Completed.");
+      setTimeout(() => navigate(from), 3000);
+    }
+  }, [location, navigate, from]);
 
   if (loading) {
     return (
@@ -349,7 +363,7 @@ const PaymentPage = () => {
               </button>
             </div>
             <Elements stripe={stripePromise}>
-              <PaymentForm
+              <StripePaymentForm
                 amount={projectDetails.payment}
                 projectTitle={projectDetails.title}
                 jobId={projectDetails.applicationId?.jobId?._id}
@@ -390,6 +404,25 @@ const PaymentPage = () => {
                 <p>Processing your Khalti payment...</p>
               </div>
             )}
+          </div>
+        )}
+        {success && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
+            <div className="bg-white p-8 rounded-lg shadow-xl text-center max-w-md">
+              <h2 className="text-green-600 text-2xl font-bold mb-2">
+                Payment Successful!
+              </h2>
+              <p className="text-gray-700 mb-4">
+                The project <strong>{projectDetails.title}</strong> has been
+                marked as completed.
+              </p>
+              <button
+                onClick={handleSuccessNavigate}
+                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300"
+              >
+                Go Back
+              </button>
+            </div>
           </div>
         )}
       </div>
